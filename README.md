@@ -8,56 +8,56 @@ PC Store is a web-based e-commerce application specializing in the sale of compu
 
 ### Backend
 
-- **Java Spring Boot 3.3.5**: A robust framework for building Java-based web applications.
-- **MongoDB**: A NoSQL database for storing product and user data.
-- **Spring Security**: For securing the application and managing user authentication.
-- **Maven**: A build automation tool for Java projects.
-- **Lombok & Mapstruct**: For reducing boilerplate code and simplifying object mapping.
+- `Java Spring Boot 3.3.5 `: A robust framework for building Java-based web applications.
+- `MongoDB`: A NoSQL database for storing product and user data.
+- `Spring Security`: For securing the application and managing user authentication.
+- `Maven`: A build automation tool for Java projects.
+- `Lombok & Mapstruct `: For reducing boilerplate code and simplifying object mapping.
 
 ### Frontend
 
-- **React 18.3**: A JavaScript library for building user interfaces.
-- **TypeScript**: A typed superset of JavaScript for improved code quality.
-- **Vite**: A fast development server and build tool for modern web applications.
-- **TailwindCSS**: A utility-first CSS framework for creating responsive designs.
-- **Shadcn/ui**: A component library for building UI elements.
-- **Lucide Icons**: A set of open-source icons for use in the application.
+- `React 18.3 `: A JavaScript library for building user interfaces.
+- `TypeScript `: A typed superset of JavaScript for improved code quality.
+- `Vite `: A fast development server and build tool for modern web applications.
+- `TailwindCSS`: A utility-first CSS framework for creating responsive designs.
+- `Shadcn/ui`: A component library for building UI elements.
+- `Lucide Icons `: A set of open-source icons for use in the application.
 
 ## Key Features
 
-- **Product Viewing**: Browse a list of products and view detailed information.
-- **Search and Filter**: Easily search for products and apply filters to find the desired items.
-- **Shopping Cart**: Add products to a shopping cart for convenient purchase.
-- **Order Placement**: Simple order placement process for users.
-- **User Account Management**: Manage user profiles and settings.
-- **Order Management**: Admin capabilities for viewing and managing orders.
-- **Admin Dashboard**: A dedicated interface for admins to oversee product listings and orders.
+- `Product Viewing`: Browse a list of products and view detailed information.
+- `Search and Filter`: Easily search for products and apply filters to find the desired items.
+- `Shopping Cart`: Add products to a shopping cart for convenient purchase.
+- `Order Placement`: Simple order placement process for users.
+- `User Account Management`: Manage user profiles and settings.
+- `Order Management `: Admin capabilities for viewing and managing orders.
+- `Admin Dashboard`: A dedicated interface for admins to oversee product listings and orders.
 
 ## Project Structure
 
-### Backend (/server)
+### Backend: /server
 
-- **/src/main/java/com/pc/store/server/** - Main source code directory.
-  - **/config/**: Contains Spring Boot configuration files.
-  - **/controller/**: Contains RESTful controllers for handling API requests.
-  - **/dto/**: Data Transfer Objects for transferring data between client and server.
-  - **/exception/**: Exception handling classes.
-  - **/mapper/**: MapStruct mappers for converting between entities and DTOs.
-  - **/model/**: MongoDB entity classes representing the data structure.
-  - **/repository/**: MongoDB repositories for data access.
-  - **/security/**: Spring Security configurations for authentication and authorization.
-  - **/service/**: Business logic implementations.
-  - **/util/**: Utility classes for various functionalities.
-- **/src/main/resources/**: Contains application configuration files and other resources.
-- **/src/test/**: Unit tests for backend services.
-- **pom.xml**: Maven configuration file for project dependencies.
+- `/src/main/java/com/pc/store/server/` - Main source code directory.
+- `/config/ `: Contains Spring Boot configuration files.
+- `/controller/ `: Contains RESTful controllers for handling API requests.
+- `/dto/`: Data Transfer Objects for transferring data between client and server.
+- `/exception/`: Exception handling classes.
+- `/mapper/ `: MapStruct mappers for converting between entities and DTOs.
+- `/model/`: MongoDB entity classes representing the data structure.
+- `/repository/ `: MongoDB repositories for data access.
+- `/security/ `: Spring Security configurations for authentication and authorization.
+- `/service/`: Business logic implementations.
+- `/util/ `: Utility classes for various functionalities.
+- `/src/main/resources/ `: Contains application configuration files and other resources.
+- `/src/test/ `: Unit tests for backend services.
+- `pom.xml`: Maven configuration file for project dependencies.
 
-### Frontend (/client)
+### Frontend: /client
 
-- **/src/components/**: React components for building the UI.
-- **/src/lib/**: Utility functions and helper methods.
-- **/src/assets/**: Static assets like images and styles.
-- **/src/hooks/**: Custom React hooks for reusable logic.
+- `/src/components/`: React components for building the UI.
+- `/src/lib/`: Utility functions and helper methods.
+- `/src/assets/`: Static assets like images and styles.
+- `/src/hooks/`: Custom React hooks for reusable logic.
 
 ## Setup and Run Project
 
@@ -114,9 +114,7 @@ PC Store is a web-based e-commerce application specializing in the sale of compu
 | ------ | -------------------- | ---------------------------------------- |
 | GET    | `/api/products`      | Retrieve a list of all products.         |
 | GET    | `/api/products/{id}` | Retrieve details of a specific product.  |
-| POST   | `/api/products`      | Add a new product (Admin only).          |
-| PUT    | `/api/products/{id}` | Update an existing product (Admin only). |
-| DELETE | `/api/products/{id}` | Delete a product (Admin only).           |
+
 
 ### Orders
 
@@ -181,9 +179,7 @@ PC Store is a web-based e-commerce application specializing in the sale of compu
 | username     | String    | "johndoe"                            | @Size(max=150), @NotNull                                    |
 | first_name   | String    | "John"                               | @Size(max=30)                                               |
 | last_name    | String    | "Doe"                                | @Size(max=30)                                               |
-| phone_number | String    | "0123456789"                         | @Size(max=10), @Pattern(regexp="^\\+?1?\\d{9,15}$", message |
-
-="Phone number is not valid") |
+| phone_number | String    | "0123456789"                         | @Size(max=10), @Pattern(regexp="^\\+?1?\\d{9,15}$", message ="Phone number is not valid") |
 | email | String | "johndoe@example.com" | @Email |
 | password | String | "hashed_password" | @Size(min=8, max=255), @NotNull |
 
