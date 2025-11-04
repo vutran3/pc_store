@@ -10,7 +10,7 @@ import {
 const Header = () => {
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center items-center">
-            <div className="container flex h-16 items-center justify-between">
+            <div className="container flex h-16 items-center justify-between " style={{padding: "0 20px"}}>
                 <div className="flex items-center gap-4">
                     <Button variant="outline" size="icon" className="md:hidden">
                         <Menu className="h-5 w-5" />

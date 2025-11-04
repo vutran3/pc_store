@@ -7,6 +7,8 @@ import { checkTokenValid } from "./redux/thunks/auth";
 import Home from "./pages/Home";
 import Header from "./components/Header";
 import ProductsPage from "./pages/Product/Product";
+import ProductDetail from "./pages/Product/ProductDetail";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   const { isLogin, token } = useSelector((state: RootState) => state.auth);
@@ -30,6 +32,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Header />
       <Routes>
         <Route
@@ -39,6 +42,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={isLogin ? <Navigate to="/" replace /> : <Register />} />
         <Route path="/products" element={<ProductsPage />} />
+        <Route path="/products/:id" element={<ProductDetail />} />
         {/* Các routes khác */}
       </Routes>
     </BrowserRouter>
