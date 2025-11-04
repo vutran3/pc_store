@@ -12,6 +12,16 @@ public enum ErrorCode {
     UNAUTHENTICATED(1003, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1004, "You do not have permission", HttpStatus.FORBIDDEN),
     INVALID_KEY(1111, "Uncategorized error", HttpStatus.BAD_REQUEST),
+
+    // Product & ProductDetail code 2xxx
+    PRODUCT_NOT_CREATED_SUCCESSFULLY(2001, "Product not created successfully", HttpStatus.INTERNAL_SERVER_ERROR),
+    PRODUCT_NOT_FOUND(2002, "Product not found", HttpStatus.NOT_FOUND),
+    PRODUCT_NOT_UPDATED_SUCCESSFULLY(2003, "Product not created successfully", HttpStatus.INTERNAL_SERVER_ERROR),
+    PRODUCT_DETAIL_NOT_FOUND(2004, "Product detail not found", HttpStatus.NOT_FOUND),
+    PRODUCT_DETAIL_NOT_CREATED(2005, "Product detail not created successfully", HttpStatus.INTERNAL_SERVER_ERROR),
+    PRODUCT_DELETE_FAILED(2006, "Product delete failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    PRODUCT_DETAIL_UPDATE_FAILED(2007, "Product detail update failed", HttpStatus.INTERNAL_SERVER_ERROR)
+
     ;
 
     ErrorCode(int code, String message, HttpStatus httpStatus) {

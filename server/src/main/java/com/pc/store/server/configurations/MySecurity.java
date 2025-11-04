@@ -19,26 +19,55 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class MySecurity {
     private final String[] PUBLIC_ENDPOINTS = {
-            "/api/customers/register", "/api/auth/log-in", "/api/auth/introspect", "/api/auth/logout", "/api/auth/refresh",
+            "/api/customers/register",
+            "/api/auth/log-in",
+            "/api/auth/introspect",
+            "/api/auth/logout",
+            "/api/auth/refresh",
+
+            // test api
+            "/api/products/add",
     };
+
     private final String[] PUBLIC_ENDPOINTS_GET = {
             "/api/products",
             "/api/products/asc",
             "/api/products/desc",
             "/api/products/{name}",
-            "/api/product-detail/{id}",
+            "/api/products/id",
+            "/api/products/search",
+            "/api/products/detail/{productId}",
+            "/api/product-detail/{productId}",
             "/api/product-detail"
     };
 
-    private  final String [] PUBLIC_ENDPOINTS_OPTIONS={
-            "/api/customers/register", "/api/auth/log-in", "/api/auth/introspect", "/api/auth/logout", "/api/auth/refresh",
+    private final String[] PUBLIC_ENDPOINTS_PUT = {
+            "/api/products/update/{productId}",
+    };
+
+    private final String[] PUBLIC_ENDPOINTS_DELETE = {
+            "/api/products/delete/{productId}",
+    };
+
+    private final String[] PUBLIC_ENDPOINTS_OPTIONS = {
+            "/api/customers/register",
+            "/api/auth/log-in",
+            "/api/auth/introspect",
+            "/api/auth/logout",
+            "/api/auth/refresh",
             "/api/products",
             "/api/products/asc",
             "/api/products/desc",
             "/api/products/{name}",
+            "/api/products/id",
+            "/api/products/add",
+            "/api/products/search",
+            "/api/products/update/{productId}",
+            "/api/products/delete/{productId}",
+            "/api/products/detail/{productId}",
             "/api/product-detail/{id}",
             "/api/product-detail",
-            "/api/customers/info"
+            "/api/customers/info",
     };
 
     @Autowired
@@ -51,15 +80,26 @@ public class MySecurity {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(authRes -> authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
-                .permitAll()
-                .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GET)
-                .permitAll()
-                .anyRequest()
-                .authenticated());
-        httpSecurity.oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.decoder(customJwtDecoder))
-                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
+        httpSecurity.authorizeHttpRequests(authRes ->
+                authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GET)
+                        .permitAll()
+                        .requestMatchers(HttpMethod.PUT, PUBLIC_ENDPOINTS_PUT)
+                        .permitAll()
+                        .requestMatchers(HttpMethod.DELETE, PUBLIC_ENDPOINTS_DELETE)
+                        .permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, PUBLIC_ENDPOINTS_OPTIONS)
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated());
+
+        httpSecurity.oauth2ResourceServer(oauth ->
+                oauth.jwt(jwt -> jwt.decoder(customJwtDecoder))
+                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
+
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
+
         return httpSecurity.build();
     }
 
@@ -75,6 +115,4 @@ public class MySecurity {
         source.registerCorsConfiguration("/**", corsConfiguration); // Áp dụng cho tất cả các endpoint
         return source;
     }
-
-
 }
