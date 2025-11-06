@@ -81,7 +81,8 @@ public class MySecurity {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(authRes ->
-                authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
+                authRes
+                        .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GET)
                         .permitAll()
@@ -92,7 +93,8 @@ public class MySecurity {
                         .requestMatchers(HttpMethod.OPTIONS, PUBLIC_ENDPOINTS_OPTIONS)
                         .permitAll()
                         .anyRequest()
-                        .authenticated());
+                        .authenticated()
+        );
 
         httpSecurity.oauth2ResourceServer(oauth ->
                 oauth.jwt(jwt -> jwt.decoder(customJwtDecoder))

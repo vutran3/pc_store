@@ -16,4 +16,6 @@ public interface ProductRepository extends MongoRepository<Product, ObjectId> {
     Page<Product> findAllBy(Pageable pageable);
 
     Page<Product> findByNameContaining(String name, Pageable pageable);
+
+    List<Product> findAllByName(String name);
 }
