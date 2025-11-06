@@ -4,6 +4,11 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Login, Register } from "./pages";
 import { RootState } from "./redux/store";
 import { checkTokenValid } from "./redux/thunks/auth";
+import Home from "./pages/Home";
+import Header from "./components/Header";
+import ProductsPage from "./pages/Product/Product";
+import ProductDetail from "./pages/Product/ProductDetail";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   const { isLogin, token } = useSelector((state: RootState) => state.auth);
@@ -27,16 +32,17 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
+      <Header />
       <Routes>
         <Route
           path="/login"
           element={isLogin ? <Navigate to="/" replace /> : <Login />}
         />
-        <Route path="/" element={<div>Home Page</div>} />
-        <Route
-          path="/register"
-          element={isLogin ? <Navigate to="/" replace /> : <Register />}
-        />
+        <Route path="/" element={<Home />} />
+        <Route path="/register" element={isLogin ? <Navigate to="/" replace /> : <Register />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/products/:id" element={<ProductDetail />} />
         {/* Các routes khác */}
       </Routes>
     </BrowserRouter>

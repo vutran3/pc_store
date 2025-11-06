@@ -7,22 +7,22 @@ export const get = async <T>(uri: string, params?: any): Promise<AxiosResponse<T
 };
 
 export const post = async <T>(
-  uri: string,
-  data?: any,
-  headers?: any
+    uri: string,
+    data?: any,
+    headers?: any
 ): Promise<AxiosResponse<T>> => {
-  try {
-      console.log('Calling API:', uri, { data, headers });
-      const res = await instance.post<T>(uri, data, { headers });
-      return res;
-  } catch (error: any) {
-      console.error('API Error:', {
-          uri,
-          data,
-          error: error.response?.data || error.message
-      });
-      throw error;
-  }
+    try {
+        console.log('Calling API:', uri, { data, headers });
+        const res = await instance.post<T>(uri, data, { headers });
+        return res;
+    } catch (error: any) {
+        console.error('API Error:', {
+            uri,
+            data,
+            error: error.response?.data || error.message
+        });
+        throw error;
+    }
 };
 export const put = async <T>(uri: string, data?: any): Promise<AxiosResponse<T>> => {
     const res = await instance.put<T>(uri, data);
