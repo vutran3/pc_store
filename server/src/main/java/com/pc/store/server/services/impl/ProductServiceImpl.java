@@ -95,9 +95,6 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 
-
-
-
     @Override
     @Transactional
     public Optional<ProductResponse> updateProduct(String productId, ProductCreationRequest request) {
@@ -194,5 +191,10 @@ public class ProductServiceImpl implements ProductService {
     public Page<Product> getProductByName(String name, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return productRepository.findByNameContaining(name, pageable);
+    }
+
+    @Override
+    public Page<Product> getProductByName(String name) {
+        return (Page<Product>) productRepository.findAllByName(name);
     }
 }

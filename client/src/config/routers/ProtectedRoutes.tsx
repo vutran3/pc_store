@@ -11,7 +11,7 @@ function ProtectedRoutes({ children }: { children: any }) {
     const { isLogin, token } = useSelector((state: RootState) => state.auth);
     const [isChecking, setIsChecking] = useState(true);
     const dispatch = useDispatch();
-
+    console.log(pathname);
     useEffect(() => {
         const checkAuth = async () => {
             if (token) {
@@ -27,7 +27,17 @@ function ProtectedRoutes({ children }: { children: any }) {
         return null;
     }
 
-    const isPrivateRoute = PRIVATE_ROUTES.includes(pathname);
+    const isPrivateRoute = PRIVATE_ROUTES.find((route: string) => {
+        const pathParts = pathname.split("/");
+        const routeParts = route.split("/");
+
+        if (routeParts[routeParts.length - 1] === "*" && pathParts[0] === routeParts[0]) return true;
+        if (pathParts.length === routeParts.length) {
+            return routeParts.every((routePart: string, index) => pathParts[index] === routePart || routePart === "*");
+        }
+
+        return false;
+    });
 
     if ((isLogin && isPrivateRoute) || !isPrivateRoute) return children;
 
