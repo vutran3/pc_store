@@ -1,11 +1,10 @@
 package com.pc.store.server.entities;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
-
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.mongodb.core.mapping.Field;
+import org.bson.types.ObjectId;
 
 @Data
 @NoArgsConstructor
@@ -13,11 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CartItem {
-
-
-    ObjectId productId;
-
-    int quantity;
-
-
+    @JsonSerialize(using = ToStringSerializer.class)
+    private ObjectId productId;
+    private int quantity;
 }

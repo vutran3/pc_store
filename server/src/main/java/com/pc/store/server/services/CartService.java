@@ -2,9 +2,12 @@ package com.pc.store.server.services;
 
 import com.pc.store.server.dao.CartRepository;
 import com.pc.store.server.dao.CustomerRespository;
+import com.pc.store.server.dao.ProductRepository;
+import com.pc.store.server.dto.response.CartItemResponse;
 import com.pc.store.server.entities.Cart;
 import com.pc.store.server.entities.CartItem;
 import com.pc.store.server.entities.Customer;
+import com.pc.store.server.entities.Product;
 import com.pc.store.server.exception.AppException;
 import com.pc.store.server.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +17,8 @@ import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -22,6 +27,7 @@ import java.util.ArrayList;
 public class CartService {
     CustomerRespository customerRespository;
     CartRepository cartRepository;
+    ProductRepository productRespository;
     public int getTotalQuantity(String customerId) {
         // Tìm Cart dựa trên customerId
         Cart cart = cartRepository.findByCustomerId(new ObjectId(customerId))
@@ -34,7 +40,7 @@ public class CartService {
         return count;
 
     }
-    private Cart createNewCart(String customerId){
+    public Cart createNewCart(String customerId){
         Customer customer = customerRespository.findById(new ObjectId(customerId)).orElseThrow(()-> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
         return Cart.builder()
                 .customer(customer)
@@ -49,8 +55,11 @@ public class CartService {
     }
 
     public Cart increaseQuantity(String customerId, String productId){
+        System.out.println(customerId);
+        System.out.println(productId);
         Cart cart = cartRepository.findByCustomerId(new ObjectId(customerId))
                 .orElseThrow(()-> new AppException(ErrorCode.CART_NOT_FOUND));
+
         CartItem existingItem = cart.getItems().stream()
                 .filter(item -> item.getProductId().equals(new ObjectId(productId)))
                 .findFirst()
@@ -80,10 +89,9 @@ public class CartService {
                 .orElse(null);
 
         if (existingItem != null) {
-            log.info("Updating existing item in cart");
+
             existingItem.setQuantity(existingItem.getQuantity() + 1);
         } else {
-
             CartItem newItem = CartItem.builder()
                     .productId(new ObjectId(productId))
                     .quantity(quantity)
@@ -109,8 +117,21 @@ public class CartService {
                 .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
         // Xóa tất cả CartItem trong Cart
         cart.getItems().clear();
-        // Lưu lại cart sau khi xóa
         return cartRepository.save(cart);
     }
+    public List<String> getProductIdsByCustomerId(ObjectId customerId) {
+        Cart cart = cartRepository.findByCustomerId(customerId).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
+        if (cart != null) {
+            return cart.getItems().stream()
+                    .map(cartItem -> cartItem.getProductId().toHexString())
+                    .collect(Collectors.toList());
+        }
+        return List.of();
+    }
+    public List<CartItem> getCartItemsByCustomerId(ObjectId customerId) {
+        Cart cart = cartRepository.findByCustomerId(customerId).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
+        if (cart != null) return cart.getItems();
 
+        return List.of();
+    }
 }
