@@ -12,32 +12,35 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class MySecurity {
     private final String[] PUBLIC_ENDPOINTS = {
-            "/api/customers/register", "/api/auth/log-in", "/api/auth/introspect", "/api/auth/logout", "/api/auth/refresh",
+        "/api/customers/register", "/api/auth/log-in", "/api/auth/introspect", "/api/auth/logout", "/api/auth/refresh",
     };
     private final String[] PUBLIC_ENDPOINTS_GET = {
-            "/api/products",
-            "/api/products/asc",
-            "/api/products/desc",
-            "/api/products/{name}",
-            "/api/product-detail/{id}",
-            "/api/product-detail"
+        "/api/products",
+        "/api/products/asc",
+        "/api/products/desc",
+        "/api/products/{name}",
+        "/api/product-detail/{id}",
+        "/api/product-detail"
     };
 
-    private  final String [] PUBLIC_ENDPOINTS_OPTIONS={
-            "/api/customers/register", "/api/auth/log-in", "/api/auth/introspect", "/api/auth/logout", "/api/auth/refresh",
-            "/api/products",
-            "/api/products/asc",
-            "/api/products/desc",
-            "/api/products/{name}",
-            "/api/product-detail/{id}",
-            "/api/product-detail",
-            "/api/customers/info"
+    private final String[] PUBLIC_ENDPOINTS_OPTIONS = {
+        "/api/customers/register",
+        "/api/auth/log-in",
+        "/api/auth/introspect",
+        "/api/auth/logout",
+        "/api/auth/refresh",
+        "/api/products",
+        "/api/products/asc",
+        "/api/products/desc",
+        "/api/products/{name}",
+        "/api/product-detail/{id}",
+        "/api/product-detail",
+        "/api/customers/info"
     };
 
     @Autowired
@@ -50,7 +53,10 @@ public class MySecurity {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(authRes -> authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
+        httpSecurity
+                .cors() 
+                .and() 
+                .authorizeHttpRequests(authRes -> authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
                 .permitAll()
                 .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GET)
                 .permitAll()
@@ -61,5 +67,4 @@ public class MySecurity {
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
         return httpSecurity.build();
     }
-
 }

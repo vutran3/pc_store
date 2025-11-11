@@ -6,6 +6,8 @@ import com.pc.store.server.entities.Product;
 
 public interface ProductDetailService {
     ProductDetailResponse getProductDetailById(String productId);
+
     ProductDetailResponse addProductDetail(Product product, ProductDetailCreationRequest request);
+
     boolean deleteProductDetailByProductId(String productId);
 }

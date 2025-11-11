@@ -1,6 +1,19 @@
 package com.pc.store.server.services.impl;
 
-import com.pc.store.server.dao.ProductDetailRepository;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.pc.store.server.dao.ProductRepository;
 import com.pc.store.server.dto.request.ProductCreationRequest;
 import com.pc.store.server.dto.response.ProductDetailResponse;
@@ -11,24 +24,11 @@ import com.pc.store.server.exception.ErrorCode;
 import com.pc.store.server.mapper.ProductMapper;
 import com.pc.store.server.services.interf.ProductDetailService;
 import com.pc.store.server.services.interf.ProductService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.swing.text.html.Option;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +37,10 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
     @Autowired
     ProductRepository productRepository;
+
     @Autowired
     ProductMapper productMapper;
+
     @Autowired
     ProductDetailService productDetailService;
 
@@ -58,10 +60,8 @@ public class ProductServiceImpl implements ProductService {
 
         if (request.getProductDetailCreationRequest() != null) {
             try {
-                ProductDetailResponse detailResponse = productDetailService.addProductDetail(
-                        savedProduct,
-                        request.getProductDetailCreationRequest()
-                );
+                ProductDetailResponse detailResponse =
+                        productDetailService.addProductDetail(savedProduct, request.getProductDetailCreationRequest());
 
                 if (detailResponse != null) {
                     savedProduct.setUpdateDetail(true);
@@ -80,17 +80,18 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getProductByNameOrSupplier(String keyword) {
-        List<ProductResponse> listProduct = Optional
-                .ofNullable(productRepository.searchByNameOrSupplierName(keyword))
+        List<ProductResponse> listProduct = Optional.ofNullable(productRepository.searchByNameOrSupplierName(keyword))
                 .orElse(Collections.emptyList())
                 .stream()
-                .map(productMapper::toProductResponse).collect(Collectors.toList());
+                .map(productMapper::toProductResponse)
+                .collect(Collectors.toList());
         return listProduct;
     }
 
     @Override
     public ProductResponse getProductById(String productId) {
-        return productRepository.findById(new ObjectId(productId))
+        return productRepository
+                .findById(new ObjectId(productId))
                 .map(productMapper::toProductResponse)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
     }
@@ -98,7 +99,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public Optional<ProductResponse> updateProduct(String productId, ProductCreationRequest request) {
-        Product existingProduct = productRepository.findById(new ObjectId(productId))
+        Product existingProduct = productRepository
+                .findById(new ObjectId(productId))
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
         Product updatedProduct = productMapper.toProduct(request);
@@ -116,10 +118,8 @@ public class ProductServiceImpl implements ProductService {
             try {
 
                 productDetailService.deleteProductDetailByProductId(productId);
-                ProductDetailResponse detailResponse = productDetailService.addProductDetail(
-                        savedProduct,
-                        request.getProductDetailCreationRequest()
-                );
+                ProductDetailResponse detailResponse =
+                        productDetailService.addProductDetail(savedProduct, request.getProductDetailCreationRequest());
 
                 if (detailResponse != null) {
                     savedProduct.setUpdateDetail(true);
@@ -160,7 +160,6 @@ public class ProductServiceImpl implements ProductService {
             throw new AppException(ErrorCode.PRODUCT_DELETE_FAILED);
         }
     }
-
 
     @Override
     public Page<Product> getProductsByPage(int page, int size) {
