@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { fetchProducts } from '../thunks/product';
+import { fetchProducts, fetchProductDetail } from '../thunks/product';
 
 export interface Supplier {
   name: string;
@@ -52,6 +52,7 @@ export interface ProductsResponse {
 
 export interface ProductState {
   products: Product[];
+  currentProduct: Product | null;
   pagination: {
     currentPage: number;
     totalPages: number;
@@ -61,11 +62,14 @@ export interface ProductState {
     last: boolean;
   };
   loading: boolean;
+  productDetailLoading: boolean;
   error: string | null;
+  productDetailError: string | null;
 }
 
 const initialState: ProductState = {
   products: [],
+  currentProduct: null,
   pagination: {
     currentPage: 0,
     totalPages: 0,
@@ -75,7 +79,9 @@ const initialState: ProductState = {
     last: false,
   },
   loading: false,
+  productDetailLoading: false,
   error: null,
+  productDetailError: null,
 };
 
 const productSlice = createSlice({
@@ -84,10 +90,15 @@ const productSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+      state.productDetailError = null;
     },
     resetProducts: (state) => {
       state.products = [];
       state.pagination = initialState.pagination;
+    },
+    clearCurrentProduct: (state) => {
+      state.currentProduct = null;
+      state.productDetailError = null;
     },
   },
   extraReducers: (builder) => {
@@ -111,9 +122,21 @@ const productSlice = createSlice({
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string || 'Không thể tải danh sách sản phẩm';
+      })
+      .addCase(fetchProductDetail.pending, (state) => {
+        state.productDetailLoading = true;
+        state.productDetailError = null;
+      })
+      .addCase(fetchProductDetail.fulfilled, (state, action: PayloadAction<Product>) => {
+        state.productDetailLoading = false;
+        state.currentProduct = action.payload;
+      })
+      .addCase(fetchProductDetail.rejected, (state, action) => {
+        state.productDetailLoading = false;
+        state.productDetailError = action.payload as string || 'Không thể tải thông tin sản phẩm';
       });
   },
 });
 
-export const { clearError, resetProducts } = productSlice.actions;
+export const { clearError, resetProducts, clearCurrentProduct } = productSlice.actions;
 export const productReducer = productSlice.reducer;

@@ -1,30 +1,49 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { ShoppingCart, Heart, Star, Truck, Shield, Plus, Minus } from 'lucide-react';
-import { MOCK_PRODUCTS } from '@/data/mockProducts';
+import { fetchProductDetail } from '@/redux/thunks/product';
+import { clearCurrentProduct } from '@/redux/slices/product';
+import { AppDispatch, RootState } from '@/redux/store';
 import ProductDetailSkeleton from './components/ProductDetailSkeleton';
 import ImageModal from '@/components/ImageModal';
 
 export default function ProductDetail() {
     const { id } = useParams();
+    const dispatch = useDispatch<AppDispatch>();
+    const { currentProduct: product, productDetailLoading: loading, productDetailError: error } = useSelector((state: RootState) => state.product);
+    
     const [quantity, setQuantity] = useState(1);
-    const [loading, setLoading] = useState(true);
-    const [product, setProduct] = useState<any>(null);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     
     useEffect(() => {
-        const fetchProduct = async () => {
-            // Giả lập loading
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const foundProduct = MOCK_PRODUCTS.find(p => p.id === id);
-            setProduct(foundProduct);
-            setLoading(false);
-        };
+        if (id) {
+            dispatch(fetchProductDetail(id));
+        }
         
-        fetchProduct();
-    }, [id]);
+        return () => {
+            dispatch(clearCurrentProduct());
+        };
+    }, [id, dispatch]);
 
     if (loading) return <ProductDetailSkeleton />;
+    
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-red-500 mb-4">{error}</p>
+                    <button 
+                        onClick={() => id && dispatch(fetchProductDetail(id))}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                        Thử lại
+                    </button>
+                </div>
+            </div>
+        );
+    }
+    
     if (!product) return <div>Không tìm thấy sản phẩm</div>;
 
     return (
