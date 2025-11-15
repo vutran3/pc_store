@@ -1,3 +1,4 @@
+
 package com.pc.store.server.configurations;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,12 +51,14 @@ public class MySecurity {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(authRes -> authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
-                .permitAll()
-                .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GET)
-                .permitAll()
-                .anyRequest()
-                .authenticated());
+        httpSecurity
+                .cors(cors -> {})
+                .authorizeHttpRequests(authRes -> authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GET)
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated());
         httpSecurity.oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.decoder(customJwtDecoder))
                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
         httpSecurity.csrf(AbstractHttpConfigurer::disable);

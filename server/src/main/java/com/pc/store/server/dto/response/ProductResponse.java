@@ -1,9 +1,9 @@
 package com.pc.store.server.dto.response;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import org.bson.types.ObjectId;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.pc.store.server.entities.Supplier;
 
 import lombok.*;
@@ -17,6 +17,7 @@ import lombok.experimental.FieldDefaults;
 public class ProductResponse {
     @JsonSerialize(using = ToStringSerializer.class)
     ObjectId id;
+
     String name;
     String img;
     double priceAfterDiscount;

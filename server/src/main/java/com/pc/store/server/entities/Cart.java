@@ -7,10 +7,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document(collection = "carts")
 @Data
@@ -26,5 +26,6 @@ public class Cart {
     @Field(name = "customerId")
     @Indexed(unique = true)
     Customer customer;
+
     List<CartItem> items;
 }

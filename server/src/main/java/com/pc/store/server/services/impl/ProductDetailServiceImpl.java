@@ -1,5 +1,11 @@
 package com.pc.store.server.services.impl;
 
+import java.util.ArrayList;
+
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.pc.store.server.dao.ProductDetailRepository;
 import com.pc.store.server.dto.request.ProductDetailCreationRequest;
 import com.pc.store.server.dto.response.ProductDetailResponse;
@@ -8,17 +14,12 @@ import com.pc.store.server.entities.ProductDetail;
 import com.pc.store.server.exception.AppException;
 import com.pc.store.server.exception.ErrorCode;
 import com.pc.store.server.mapper.ProductDetailMapper;
-import com.pc.store.server.mapper.ProductMapper;
 import com.pc.store.server.services.interf.ProductDetailService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -27,11 +28,14 @@ import java.util.ArrayList;
 public class ProductDetailServiceImpl implements ProductDetailService {
     @Autowired
     ProductDetailMapper productDetailMapper;
+
     @Autowired
     ProductDetailRepository productDetailRepository;
+
     @Override
     public ProductDetailResponse getProductDetailById(String productId) {
-        return productDetailRepository.findByProductId(new ObjectId(productId))
+        return productDetailRepository
+                .findByProductId(new ObjectId(productId))
                 .map(productDetailMapper::toProductDetailResponse)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_DETAIL_NOT_FOUND));
     }
@@ -72,5 +76,4 @@ public class ProductDetailServiceImpl implements ProductDetailService {
             return false;
         }
     }
-
 }

@@ -1,25 +1,24 @@
 import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { SlidersHorizontal } from 'lucide-react';
-import { MOCK_PRODUCTS } from '@/data/mockProducts.js';
+import { fetchProducts } from '@/redux/thunks/product';
+import { AppDispatch, RootState } from '@/redux/store';
 import ProductCard from './components/ProductCard';
 import ProductSkeleton from './components/ProductSkeleton';
 import ProductFilters from './components/ProductFilters';
 
 const ProductsPage = () => {
-    const [products, setProducts] = useState<any[]>([]);
+    const dispatch = useDispatch<AppDispatch>();
+    const { products, loading, error, pagination } = useSelector((state: RootState) => state.product);
+
     const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [showFilters, setShowFilters] = useState(false);
     const [sortBy, setSortBy] = useState('newest');
 
     useEffect(() => {
-        setTimeout(() => {
-            setProducts(MOCK_PRODUCTS);
-            setFilteredProducts(MOCK_PRODUCTS);
-            setLoading(false);
-        }, 800);
-    }, []);
+        dispatch(fetchProducts({ page: 0, size: 10 }));
+    }, [dispatch]);
 
     useEffect(() => {
         let filtered = [...products];
@@ -41,6 +40,22 @@ const ProductsPage = () => {
         }
         setFilteredProducts(filtered);
     }, [searchQuery, sortBy, products]);
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-red-500 mb-4">{error}</p>
+                    <button
+                        onClick={() => dispatch(fetchProducts({ page: 0, size: 10 }))}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                        Thử lại
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -76,6 +91,10 @@ const ProductsPage = () => {
                                 <span className="font-semibold text-gray-800 dark:text-gray-100">
                                     {filteredProducts.length}
                                 </span>{' '}
+                                trong tổng số{' '}
+                                <span className="font-semibold text-gray-800 dark:text-gray-100">
+                                    {pagination.totalElements}
+                                </span>{' '}
                                 sản phẩm
                             </p>
 
@@ -104,11 +123,48 @@ const ProductsPage = () => {
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {filteredProducts.map((p) => (
-                                    <ProductCard key={p.id} product={p} />
-                                ))}
-                            </div>
+                            <>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {filteredProducts.map((p) => (
+                                        <ProductCard key={p.id} product={p} />
+                                    ))}
+                                </div>
+
+                                {/* Pagination controls */}
+                                {pagination.totalPages > 1 && (
+                                    <div className="flex justify-center mt-8">
+                                        <div className="flex gap-2">
+                                            {!pagination.first && (
+                                                <button
+                                                    onClick={() => dispatch(fetchProducts({
+                                                        page: pagination.currentPage - 1,
+                                                        size: pagination.pageSize
+                                                    }))}
+                                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                >
+                                                    Trước
+                                                </button>
+                                            )}
+
+                                            <span className="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                                                {pagination.currentPage + 1} / {pagination.totalPages}
+                                            </span>
+
+                                            {!pagination.last && (
+                                                <button
+                                                    onClick={() => dispatch(fetchProducts({
+                                                        page: pagination.currentPage + 1,
+                                                        size: pagination.pageSize
+                                                    }))}
+                                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                >
+                                                    Tiếp
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>

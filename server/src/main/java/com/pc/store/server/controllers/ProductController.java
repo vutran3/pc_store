@@ -1,17 +1,17 @@
 package com.pc.store.server.controllers;
 
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.*;
+
 import com.pc.store.server.dto.request.ApiResponse;
 import com.pc.store.server.dto.request.ProductCreationRequest;
-import com.pc.store.server.dto.response.ProductDetailResponse;
 import com.pc.store.server.dto.response.ProductResponse;
 import com.pc.store.server.entities.Product;
-import com.pc.store.server.services.interf.ProductDetailService;
 import com.pc.store.server.services.interf.ProductService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/products")
@@ -53,7 +53,6 @@ public class ProductController {
         return ApiResponse.<ProductResponse>builder().result(product).build();
     }
 
-
     @PostMapping("/add")
     public ApiResponse<ProductResponse> addProduct(@RequestBody ProductCreationRequest request) {
         var product = productService.addProduct(request);
@@ -63,8 +62,7 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public ApiResponse<java.util.List<ProductResponse>> getProductByNameOrSupplier(
-            @RequestParam String keyword) {
+    public ApiResponse<java.util.List<ProductResponse>> getProductByNameOrSupplier(@RequestParam String keyword) {
         var products = productService.getProductByNameOrSupplier(keyword);
         return ApiResponse.<java.util.List<ProductResponse>>builder()
                 .result(products)
@@ -73,8 +71,7 @@ public class ProductController {
 
     @PutMapping("/update/{productId}")
     public ApiResponse<ProductResponse> updateProduct(
-            @PathVariable String productId,
-            @RequestBody ProductCreationRequest request) {
+            @PathVariable String productId, @RequestBody ProductCreationRequest request) {
         var product = productService.updateProduct(productId, request);
         return ApiResponse.<ProductResponse>builder()
                 .result(product.orElse(null))
@@ -84,8 +81,6 @@ public class ProductController {
     @DeleteMapping("/delete/{productId}")
     public ApiResponse<Boolean> deleteProduct(@PathVariable String productId) {
         var result = productService.deleteProductById(productId);
-        return ApiResponse.<Boolean>builder()
-                .result(result)
-                .build();
+        return ApiResponse.<Boolean>builder().result(result).build();
     }
 }

@@ -105,6 +105,7 @@ public class AuthenticationService {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(customer.getUserName())
+                .claim("customerId", customer.getId().toHexString()) // <-- thêm claim customerId ở đây
                 .issuer("pc-store")
                 .issueTime(new Date())
                 .expirationTime(new Date(
