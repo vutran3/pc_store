@@ -1,10 +1,12 @@
 package com.pc.store.server.entities;
 
+import org.bson.types.ObjectId;
+
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.bson.types.ObjectId;
 
 @Data
 @NoArgsConstructor
@@ -14,5 +16,6 @@ import org.bson.types.ObjectId;
 public class CartItem {
     @JsonSerialize(using = ToStringSerializer.class)
     private ObjectId productId;
+
     private int quantity;
 }

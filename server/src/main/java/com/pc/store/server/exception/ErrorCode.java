@@ -26,7 +26,7 @@ public enum ErrorCode {
     CART_NOT_FOUND(3001, "Cart not found", HttpStatus.NOT_FOUND),
     CART_ITEM_NOT_FOUND(3002, "Cart item not found", HttpStatus.NOT_FOUND),
 
-    //ORDER code
+    // ORDER code
     ORDER_NOT_FOUND(4001, "Order not found", HttpStatus.NOT_FOUND),
     ;
 

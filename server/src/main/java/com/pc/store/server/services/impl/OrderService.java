@@ -8,19 +8,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.pc.store.server.dao.CustomerRespository;
-import com.pc.store.server.dao.ProductRepository;
-import com.pc.store.server.services.EmailService;
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.pc.store.server.dao.CartRepository;
+import com.pc.store.server.dao.CustomerRespository;
 import com.pc.store.server.dao.OrderRepository;
+import com.pc.store.server.dao.ProductRepository;
 import com.pc.store.server.dto.request.OrderCreationRequest;
 import com.pc.store.server.entities.*;
 import com.pc.store.server.exception.AppException;
 import com.pc.store.server.exception.ErrorCode;
+import com.pc.store.server.services.EmailService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -89,12 +88,11 @@ public class OrderService {
         StringBuilder orderItemsHtml = new StringBuilder();
         DecimalFormat df = new DecimalFormat("#,###.00");
 
-
-
         for (CartItem item : order.getItems()) {
 
             // fetch productName by id
-            Product product = productRepository.findById(item.getProductId())
+            Product product = productRepository
+                    .findById(item.getProductId())
                     .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
             orderItemsHtml
