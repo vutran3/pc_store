@@ -53,6 +53,18 @@ public class MySecurity {
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
     }
+    @Bean
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.addAllowedOriginPattern("*"); // Frontend domain
+        corsConfiguration.setAllowCredentials(true); // Cho phép cookie hoặc thông tin xác thực
+        corsConfiguration.addAllowedMethod("*"); // Cho phép tất cả các phương thức HTTP
+        corsConfiguration.addAllowedHeader("*"); // Cho phép tất cả các header
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfiguration); // Áp dụng cho tất cả các endpoint
+        return source;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -65,20 +77,7 @@ public class MySecurity {
                         .authenticated());
         httpSecurity.oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.decoder(customJwtDecoder))
                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
-        httpSecurity.csrf(AbstractHttpConfigurer::disable);
+        httpSecurity.csrf(AbstractHttpConfigurer::disable).cors(cors -> cors.configurationSource(corsConfigurationSource()));;
         return httpSecurity.build();
-    }
-
-    @Bean
-    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOriginPattern("*"); // Frontend domain
-        corsConfiguration.setAllowCredentials(true); // Cho phép cookie hoặc thông tin xác thực
-        corsConfiguration.addAllowedMethod("*"); // Cho phép tất cả các phươngs thức HTTP
-        corsConfiguration.addAllowedHeader("*"); // Cho phép tất cả các header
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfiguration); // Áp dụng cho tất cả các endpoint
-        return source;
     }
 }

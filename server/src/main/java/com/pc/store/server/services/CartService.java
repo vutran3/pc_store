@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.pc.store.server.entities.Product;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +29,6 @@ public class CartService {
     CustomerRespository customerRespository;
     CartRepository cartRepository;
     ProductRepository productRespository;
-    private final ProductRepository productRepository;
 
     public int getTotalQuantity(String customerId) {
         // Tìm Cart dựa trên customerId
@@ -52,37 +50,18 @@ public class CartService {
         return Cart.builder().customer(customer).items(new ArrayList<>()).build();
     }
 
-
     public Cart addOrUpdateCartItem(String customerId, String productId, int quantity) {
-        // 1. Validate product tồn tại
-        Product product = productRepository.findById(new ObjectId(productId))
-                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-
-        // 2. Kiểm tra số lượng hợp lệ
-        if (quantity <= 0) {
-            throw new AppException(ErrorCode.INVALID_QUANTITY);
-        }
-
-        // 3. Tìm hoặc tạo cart
-        Cart cart = cartRepository.findByCustomerId(new ObjectId(customerId))
-                .orElseGet(() -> createNewCart(customerId));
-
-        // 4. Thêm/cập nhật item
+        Cart cart =
+                cartRepository.findByCustomerId(new ObjectId(customerId)).orElseGet(() -> createNewCart(customerId));
         addOrUpdateItemInCart(cart, productId, quantity);
-
-        // 5. Lưu cart
-        Cart savedCart = cartRepository.save(cart);
-
-        log.info("Added/Updated item in cart. CustomerId: {}, ProductId: {}, Quantity: {}",
-                customerId, productId, quantity);
-
-        return savedCart;
+        return cartRepository.save(cart);
     }
 
     public Cart increaseQuantity(String customerId, String productId) {
         System.out.println(customerId);
         System.out.println(productId);
-        Cart cart = cartRepository.findByCustomerId(new ObjectId(customerId))
+        Cart cart = cartRepository
+                .findByCustomerId(new ObjectId(customerId))
                 .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
 
         CartItem existingItem = cart.getItems().stream()
@@ -94,7 +73,8 @@ public class CartService {
     }
 
     public Cart decreaseQuantity(String customerId, String productId) {
-        Cart cart = cartRepository.findByCustomerId(new ObjectId(customerId))
+        Cart cart = cartRepository
+                .findByCustomerId(new ObjectId(customerId))
                 .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
         CartItem existingItem = cart.getItems().stream()
                 .filter(item -> item.getProductId().equals(new ObjectId(productId)))
@@ -148,7 +128,8 @@ public class CartService {
     }
 
     public List<String> getProductIdsByCustomerId(ObjectId customerId) {
-        Cart cart = cartRepository.findByCustomerId(customerId)
+        Cart cart = cartRepository
+                .findByCustomerId(customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
         if (cart != null) {
             return cart.getItems().stream()
@@ -159,10 +140,10 @@ public class CartService {
     }
 
     public List<CartItem> getCartItemsByCustomerId(ObjectId customerId) {
-        Cart cart = cartRepository.findByCustomerId(customerId)
+        Cart cart = cartRepository
+                .findByCustomerId(customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
-        if (cart != null)
-            return cart.getItems();
+        if (cart != null) return cart.getItems();
 
         return List.of();
     }
