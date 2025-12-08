@@ -8,7 +8,7 @@ import com.nimbusds.jose.JOSEException;
 import com.pc.store.server.dto.request.*;
 import com.pc.store.server.dto.response.AuthenticationResponse;
 import com.pc.store.server.dto.response.IntrospectResponse;
-import com.pc.store.server.services.AuthenticationService;
+import com.pc.store.server.services.impl.AuthenticationService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

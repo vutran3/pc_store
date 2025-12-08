@@ -48,7 +48,7 @@ public class ProductServiceImpl implements ProductService {
     @SuppressWarnings("chua co logic check neu them 2 san pham giong nhau thi ntn")
     @Transactional
     public Optional<ProductResponse> addProduct(ProductCreationRequest request) {
-        Product product = Optional.ofNullable(productMapper.toProduct(request))
+        Product product = Optional.ofNullable(productMapper.toProductV1(request))
                 .orElseThrow(() -> new RuntimeException("Error mapping ProductCreationRequest to Product"));
 
         product.setUpdateDetail(false);
@@ -103,7 +103,7 @@ public class ProductServiceImpl implements ProductService {
                 .findById(new ObjectId(productId))
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        Product updatedProduct = productMapper.toProduct(request);
+        Product updatedProduct = productMapper.toProductV1(request);
         updatedProduct.setId(existingProduct.getId()); // Giữ nguyên ID cũ
         updatedProduct.setUpdateDetail(existingProduct.isUpdateDetail()); // Giữ nguyên flag
 

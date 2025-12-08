@@ -19,6 +19,21 @@ export interface Product {
     updateDetail: boolean;
 }
 
+export interface ProductDetail {
+    _id: string;
+    images: string[];
+    product: String;
+    processor: string;
+    ram: string;
+    storage: string;
+    graphicsCard: string;
+    powerSupply: string;
+    motherboard: string;
+    case: string;
+    coolingSystem: string;
+    operatingSystem: string;
+}
+
 export interface Pageable {
     pageNumber: number;
     pageSize: number;

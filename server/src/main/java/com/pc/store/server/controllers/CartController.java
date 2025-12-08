@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.pc.store.server.dto.request.ApiResponse;
 import com.pc.store.server.entities.Cart;
 import com.pc.store.server.entities.CartItem;
-import com.pc.store.server.services.CartService;
+import com.pc.store.server.services.impl.CartService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,6 @@ import lombok.experimental.FieldDefaults;
 @RequestMapping("/api/cart")
 public class CartController {
     CartService cartService;
-    ProductRepository productRepository; // <-- inject product repo
 
     @GetMapping("countOfItems")
     public ApiResponse<Integer> countOfItems(@RequestParam String customerId) {
@@ -72,8 +71,7 @@ public class CartController {
     }
 
     @GetMapping("/items/{customerId}")
-    public ApiResponse<List<Map<String, Object>>> getCartItemsByCustomerId(@PathVariable String customerId) {
-        // Lấy CartItem (productId + quantity)
+    public ApiResponse<List<CartItem>> getCartItemsByCustomerId(@PathVariable String customerId) {
         List<CartItem> cartItems = cartService.getCartItemsByCustomerId(new ObjectId(customerId));
         return ApiResponse.<List<CartItem>>builder().result(cartItems).build();
     }

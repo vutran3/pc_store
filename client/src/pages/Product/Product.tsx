@@ -58,8 +58,8 @@ const ProductsPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white">
-                <div className="container mx-auto px-4 py-16">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4">Build Your Dream PC</h1>
+                <div className="container mx-auto px-4 py-16 pl-4">
+                    <h1 className="text-4xl md:text-5xl font-bold mb-4 pt-8">Build Your Dream PC</h1>
                     <p className="text-blue-100 max-w-2xl text-lg">
                         High-performance custom PCs built with premium components.
                     </p>
