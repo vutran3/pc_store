@@ -1,44 +1,46 @@
-package iuh.fit.truongthanhtung_22637091_shopping.controller;
-
-import iuh.fit.truongthanhtung_22637091_shopping.service.AIService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+package com.pc.store.server.controllers;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import com.pc.store.server.services.AIService;
+
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Controller xử lý các request liên quan đến AI Assistant
  */
-@Controller
-@RequestMapping("/ai")
+@RestController
+@RequestMapping("/api/ai")
+@Slf4j
 public class AIController {
 
     @Autowired
     private AIService aiService;
 
     /**
-     * Hiển thị trang AI Chat
-     */
-    @GetMapping("/chat")
-    public String showChatPage() {
-        return "ai/chat";
-    }
-
-    /**
      * API endpoint để xử lý câu hỏi từ người dùng
      */
     @PostMapping("/ask")
-    @ResponseBody
     public ResponseEntity<Map<String, String>> askQuestion(@RequestBody Map<String, String> request) {
         try {
+            // Log authentication info
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            log.info(
+                    "AI Ask - User: {}, Authenticated: {}",
+                    auth != null ? auth.getName() : "null",
+                    auth != null ? auth.isAuthenticated() : false);
+
             String question = request.get("question");
 
             if (question == null || question.trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Câu hỏi không được để trống"));
+                return ResponseEntity.badRequest().body(Map.of("error", "Câu hỏi không được để trống"));
             }
 
             String answer = aiService.processQuery(question);
@@ -50,6 +52,7 @@ public class AIController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            log.error("AI Ask Error: ", e);
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Có lỗi xảy ra: " + e.getMessage());
             errorResponse.put("status", "error");
@@ -61,15 +64,12 @@ public class AIController {
      * API endpoint để lấy thống kê nhanh
      */
     @GetMapping("/stats")
-    @ResponseBody
     public ResponseEntity<Map<String, String>> getStats() {
         try {
             String stats = aiService.processQuery("Cho tôi biết thống kê tổng quan về hệ thống");
             return ResponseEntity.ok(Map.of("stats", stats, "status", "success"));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                .body(Map.of("error", e.getMessage(), "status", "error"));
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage(), "status", "error"));
         }
     }
 }
-

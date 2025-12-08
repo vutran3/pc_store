@@ -10,6 +10,7 @@ import Cart from "./pages/Cart/Cart";
 import Checkout from "./pages/Checkout/Checkout";
 import CheckOrder from "./pages/CheckOrder/CheckOrder";
 import { Toaster } from "./components/ui/toaster";
+import AIChatModal from "./components/AIChatModal";
 
 function App() {
     return (
@@ -29,6 +30,7 @@ function App() {
                 </Routes>
             </ProtectedRoutes>
             <Toaster />
+            <AIChatModal />
         </BrowserRouter>
     );
 }
