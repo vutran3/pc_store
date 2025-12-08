@@ -7,6 +7,8 @@ import ProductDetail from "./pages/Product/ProductDetail";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoutes from "./config/routers/ProtectedRoutes";
 import Cart from "./pages/Cart/Cart";
+import Checkout from "./pages/Checkout/Checkout";
+import CheckOrder from "./pages/CheckOrder/CheckOrder";
 import { Toaster } from "./components/ui/toaster";
 
 function App() {
@@ -22,6 +24,8 @@ function App() {
                     <Route path="/products" element={<ProductsPage />} />
                     <Route path="/products/:id" element={<ProductDetail />} />
                     <Route path="/cart" element={<Cart />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/check-order" element={<CheckOrder />} />
                 </Routes>
             </ProtectedRoutes>
             <Toaster />

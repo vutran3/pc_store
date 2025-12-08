@@ -10,8 +10,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 8080, 
-    open: true, 
+    port: 5173,
+    open: true,
   },
 
 })

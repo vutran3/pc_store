@@ -11,6 +11,7 @@ import {
     removeFromCart,
     clearCart
 } from '@/redux/thunks/cart';
+import { toggleCartItem } from '@/redux/slices/cart';
 import CartItem from './components/CartItem';
 import CartSummary from './components/CartSummary';
 import EmptyCart from './components/EmptyCart';
@@ -113,28 +114,15 @@ export default function Cart() {
         }
     }, [resolvedCustomerId, dispatch]);
 
-    // Khi cartItems thay đổi, mặc định chọn tất cả item để hiển thị subtotal ngay
-    useEffect(() => {
-        if (Array.isArray(cartItems) && cartItems.length > 0) {
-            const allSelected: Record<string, boolean> = {};
-            cartItems.forEach((it) => {
-                allSelected[it.productId] = true;
-            });
-            setSelectedIds(allSelected);
-        } else {
-            setSelectedIds({});
-        }
-    }, [cartItems]);
+    // Items are automatically checked when fetched via Redux
 
     // selected items state
-    const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
-
     const toggleSelect = (productId: string) => {
-        setSelectedIds(prev => ({ ...prev, [productId]: !prev[productId] }));
+        dispatch(toggleCartItem(productId));
     };
 
     // compute totals for selected items
-    const selectedItems = cartItems.filter(it => selectedIds[it.productId]);
+    const selectedItems = cartItems.filter(it => it.checked);
     const subtotal = selectedItems.reduce((s, it) => s + (it.product?.priceAfterDiscount ?? 0) * it.quantity, 0);
     const originalTotal = selectedItems.reduce((s, it) => s + (it.product?.originalPrice ?? it.product?.priceAfterDiscount ?? 0) * it.quantity, 0);
     const savings = Math.max(0, originalTotal - subtotal);
@@ -205,7 +193,15 @@ export default function Cart() {
     };
 
     const handleCheckout = () => {
-        navigate('/checkout');
+        if (selectedItems.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'Chưa chọn sản phẩm',
+                description: 'Vui lòng chọn ít nhất một sản phẩm để thanh toán'
+            });
+            return;
+        }
+        navigate('/check-order');
     };
 
     if (loading) {
@@ -269,7 +265,7 @@ export default function Cart() {
                                         <CartItem
                                             key={item.productId}
                                             item={item}
-                                            selected={!!selectedIds[item.productId]}
+                                            selected={!!item.checked}
                                             onToggle={() => toggleSelect(item.productId)}
                                             onIncrease={() => handleIncrease(item.productId)}
                                             onDecrease={() => handleDecrease(item.productId)}

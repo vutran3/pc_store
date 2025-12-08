@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Detail</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">🛍️ Shopping System</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href="/home">Trang chủ</a></li>
+                <li class="nav-item"><a class="nav-link" href="/product">Sản phẩm</a></li>
+
+                <!-- AI Chat - Tất cả mọi người đều có thể truy cập -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/ai/chat">
+                        <i class="bi bi-robot"></i> AI Assistant
+                    </a>
+                </li>
+
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" href="/customer">Quản trị Khách hàng</a>
+                </li>
+                <li class="nav-item dropdown" sec:authorize="hasAnyRole('CUSTOMER', 'ADMIN')">
+                    <a class="nav-link dropdown-toggle" href="#" id="orderDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-receipt"></i> Đơn hàng
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="orderDropdown">
+                        <li sec:authorize="hasRole('CUSTOMER')">
+                            <a class="dropdown-item" href="/order/my-orders">
+                                <i class="bi bi-list-check"></i> Đơn hàng của tôi
+                            </a>
+                        </li>
+                        <li sec:authorize="hasRole('ADMIN')">
+                            <a class="dropdown-item" href="/order">
+                                <i class="bi bi-list-ul"></i> Tất cả đơn hàng
+                            </a>
+                        </li>
+                        <li sec:authorize="hasRole('ADMIN')"><hr class="dropdown-divider"></li>
+                        <li sec:authorize="hasRole('ADMIN')">
+                            <a class="dropdown-item" href="/order/new">
+                                <i class="bi bi-plus-circle"></i> Tạo đơn hàng mới
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('CUSTOMER', 'ADMIN')">
+                    <a class="nav-link" href="/cart"><i class="bi bi-cart"></i> Giỏ hàng</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" href="/login">
+                        <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" href="/register">
+                        <i class="bi bi-person-plus"></i> Đăng ký
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <span class="navbar-text text-white me-3">
+                        👤 <span sec:authentication="name"></span>
+                    </span>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h2><i class="bi bi-box-seam"></i> Chi tiết sản phẩm</h2>
+
+    <!-- Messages -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title" th:text="${product.name}">Product Name</h5>
+            <p class="card-text"><strong>ID:</strong> <span th:text="${product.id}">1</span></p>
+            <p class="card-text"><strong>Mô tả:</strong> <span th:text="${product.description}">Description</span></p>
+            <p class="card-text"><strong>Giá:</strong>
+                <span class="text-danger fw-bold" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">100000</span>
+            </p>
+            <p class="card-text"><strong>Số lượng còn lại:</strong>
+                <span th:if="${product.stockQuantity > 0}" class="badge bg-success" th:text="${product.stockQuantity}">10</span>
+                <span th:if="${product.stockQuantity <= 0}" class="badge bg-danger">Hết hàng</span>
+            </p>
+
+            <!-- Form thêm vào giỏ hàng - Chỉ CUSTOMER và ADMIN -->
+            <div sec:authorize="hasAnyRole('CUSTOMER', 'ADMIN')" class="mt-3">
+                <form th:action="@{/cart/add}" method="post" class="row g-3 align-items-end">
+                    <input type="hidden" name="productId" th:value="${product.id}">
+                    <div class="col-auto">
+                        <label for="quantity" class="form-label">Số lượng:</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity"
+                               value="1" min="1" th:max="${product.stockQuantity}"
+                               th:disabled="${product.stockQuantity <= 0}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-success"
+                                th:disabled="${product.stockQuantity <= 0}">
+                            <i class="bi bi-cart-plus"></i> Thêm vào giỏ hàng
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Thông báo cho GUEST -->
+            <div sec:authorize="!isAuthenticated()" class="alert alert-info mt-3">
+                <i class="bi bi-info-circle"></i>
+                Vui lòng <a href="/login" class="alert-link">đăng nhập</a> để thêm sản phẩm vào giỏ hàng!
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mt-4"><i class="bi bi-chat-left-text"></i> Đánh giá sản phẩm</h4>
+    <div th:if="${product.comments == null || product.comments.isEmpty()}" class="alert alert-info">
+        Chưa có đánh giá nào cho sản phẩm này.
+    </div>
+    <div th:if="${product.comments != null && !product.comments.isEmpty()}">
+        <div class="card mb-2" th:each="comment : ${product.comments}">
+            <div class="card-body">
+                <p th:text="${comment.content}">Comment content</p>
+                <small class="text-muted" th:if="${comment.createdDate != null}"
+                       th:text="${#temporals.format(comment.createdDate, 'dd/MM/yyyy HH:mm')}">Date</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <!-- Nút quản trị - Chỉ ADMIN -->
+        <span sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/product/edit/{id}(id=${product.id})}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Sửa
+            </a>
+            <a th:href="@{/product/delete/{id}(id=${product.id})}" class="btn btn-danger"
+               onclick="return confirm('Bạn có chắc muốn xóa?')">
+                <i class="bi bi-trash"></i> Xóa
+            </a>
+        </span>
+        <a href="/product" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

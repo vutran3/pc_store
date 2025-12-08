@@ -1,5 +1,8 @@
 package com.pc.store.server.services;
 
+import java.util.HashSet;
+import java.util.Optional;
+
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -10,8 +13,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.pc.store.server.dao.CustomerRespository;
+import com.pc.store.server.dto.request.AddressRequest;
 import com.pc.store.server.dto.request.CustomerCreationResquest;
 import com.pc.store.server.dto.response.CustomerResponse;
+import com.pc.store.server.entities.Address;
 import com.pc.store.server.entities.Customer;
 import com.pc.store.server.exception.AppException;
 import com.pc.store.server.exception.ErrorCode;
@@ -47,6 +52,7 @@ public class CustomerService {
             update.set("email", customerCreationResquest.getEmail());
             update.set("phoneNumber", customerCreationResquest.getPhoneNumber());
             update.set("password", passwordEncoder.encode(customerCreationResquest.getPassword()));
+            update.set("addresses", new HashSet<Address>());
             Customer customer = mongoTemplate.findAndModify(
                     query,
                     update,
@@ -71,6 +77,45 @@ public class CustomerService {
         Customer customer = customerRespository
                 .findByUserName(name)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+        return customerMapper.toCustomerResponse(customer);
+    }
+
+    public CustomerResponse addAddress(AddressRequest request) {
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("Add address for user: {}", name);
+
+        Customer customer = customerRespository
+                .findByUserName(name)
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+        log.info("Customer found: {}", customer.toString());
+        Optional<Address> existingAddress = customer.getAddresses().stream()
+                .filter(addr -> addr.getAddress().equalsIgnoreCase(request.getAddress()))
+                .findFirst();
+
+        if (existingAddress.isPresent()) {
+            // Nếu địa chỉ đã có và chỉ muốn update default flag
+            if (request.isDefault()) {
+                customer.getAddresses().forEach(a -> a.setDefault(false));
+                existingAddress.get().setDefault(true);
+            }
+            // Lưu trạng thái mới
+            customerRespository.save(customer);
+            return customerMapper.toCustomerResponse(customer);
+        }
+
+        // Nếu là địa chỉ mới
+        if (request.isDefault()) {
+            customer.getAddresses().forEach(a -> a.setDefault(false));
+        }
+
+        Address newAddress = Address.builder()
+                .address(request.getAddress())
+                .isDefault(request.isDefault())
+                .build();
+
+        customer.getAddresses().add(newAddress);
+
+        customerRespository.save(customer);
         return customerMapper.toCustomerResponse(customer);
     }
 }

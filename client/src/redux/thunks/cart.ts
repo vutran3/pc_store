@@ -4,7 +4,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { cartApi } from '@/services/api/cartApi';
 import { get } from '@/services/api.service';
 import ENDPOINT from '@/constants/endpoint';
-import { Cart, CartItem, CartItemWithProduct } from '@/types/cart.types';
+import { Cart, CartItem, CartItemWithProduct } from '@/types/Cart';
 
 type ProductAny = any;
 

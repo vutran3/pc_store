@@ -1,10 +1,13 @@
 package com.pc.store.server.dto.response;
 
+import java.util.Set;
+
 import org.bson.types.ObjectId;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.pc.store.server.entities.Address;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -24,4 +27,5 @@ public class CustomerResponse {
     String lastName;
     String email;
     String phoneNumber;
+    Set<Address> addresses;
 }

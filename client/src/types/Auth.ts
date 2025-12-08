@@ -24,8 +24,7 @@ export const RegisterCredentialsSchema = z.object({
       message: 'Tên đăng nhập không được để trống'
     }),
   password: z.string()
-    .min(6, 'Mật khẩu phải có ít nhất 6 ký tự')
-    .max(8, 'Mật khẩu không được quá 8 ký tự')
+    .min(5, 'Mật khẩu phải có ít nhất 5 ký tự')
     .trim()
     .refine(val => val.length > 0, {
       message: 'Mật khẩu không được để trống'
@@ -63,7 +62,22 @@ export const CheckTokenValidResponseSchema = z.object({
   }),
 });
 
+// Schema cho Address
+export const AddressSchema = z.object({
+  address: z.string(),
+  isDefault: z.boolean(),
+});
 
+// Schema cho CustomerInfo
+export const CustomerInfoSchema = z.object({
+  id: z.string(),
+  userName: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  email: z.string(),
+  phoneNumber: z.string(),
+  addresses: z.array(AddressSchema),
+});
 
 // Xuất kiểu dữ liệu từ schema
 export type Credentials = z.infer<typeof CredentialsSchema>;
@@ -71,3 +85,5 @@ export type LoginResponse = z.infer<typeof LoginResponseSchema>;
 export type RegisterCredentials = z.infer<typeof RegisterCredentialsSchema>;
 export type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
 export type CheckTokenValidResponse = z.infer<typeof CheckTokenValidResponseSchema>;
+export type Address = z.infer<typeof AddressSchema>;
+export type CustomerInfo = z.infer<typeof CustomerInfoSchema>;

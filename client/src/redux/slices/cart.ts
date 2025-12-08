@@ -1,7 +1,7 @@
 // src/redux/slices/cart.ts
 
-import { createSlice } from '@reduxjs/toolkit';
-import { CartState } from '@/types/cart.types';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { CartState } from '@/types/Cart';
 import {
   fetchCart,
   addToCart,
@@ -28,6 +28,12 @@ const cartSlice = createSlice({
       state.error = null;
     },
     resetCart: () => initialState,
+    toggleCartItem: (state, action: PayloadAction<string>) => {
+      const item = state.cartItems.find((i) => i.productId === action.payload);
+      if (item) {
+        item.checked = !item.checked;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -37,7 +43,7 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.cartItems = action.payload;
+        state.cartItems = action.payload.map((item) => ({ ...item, checked: true }));
         state.totalQuantity = action.payload.reduce((sum, item) => sum + item.quantity, 0);
         state.totalPrice = action.payload.reduce(
           (sum, item) => sum + (item.product?.priceAfterDiscount ?? 0) * item.quantity,
@@ -88,6 +94,6 @@ const cartSlice = createSlice({
   },
 });
 
-export const { clearError, resetCart } = cartSlice.actions;
+export const { clearError, resetCart, toggleCartItem } = cartSlice.actions;
 export const cartReducer = cartSlice.reducer;
 export default cartSlice.reducer;

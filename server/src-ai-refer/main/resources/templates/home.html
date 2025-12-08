@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">🛍️ Shopping System</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link active" href="/home">Trang chủ</a></li>
+                <li class="nav-item"><a class="nav-link" href="/product">Sản phẩm</a></li>
+
+                <!-- AI Chat - Tất cả mọi người đều có thể truy cập -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/ai/chat">
+                        <i class="bi bi-robot"></i> AI Assistant
+                    </a>
+                </li>
+
+                <!-- Chỉ ADMIN mới thấy menu Quản trị Khách hàng -->
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" href="/customer">Quản trị Khách hàng</a>
+                </li>
+
+                <!-- CUSTOMER và ADMIN thấy menu Đơn hàng -->
+                <li class="nav-item dropdown" sec:authorize="hasAnyRole('CUSTOMER', 'ADMIN')">
+                    <a class="nav-link dropdown-toggle" href="#" id="orderDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-receipt"></i> Đơn hàng
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="orderDropdown">
+                        <li sec:authorize="hasRole('CUSTOMER')">
+                            <a class="dropdown-item" href="/order/my-orders">
+                                <i class="bi bi-list-check"></i> Đơn hàng của tôi
+                            </a>
+                        </li>
+                        <li sec:authorize="hasRole('ADMIN')">
+                            <a class="dropdown-item" href="/order">
+                                <i class="bi bi-list-ul"></i> Tất cả đơn hàng
+                            </a>
+                        </li>
+                        <li sec:authorize="hasRole('ADMIN')"><hr class="dropdown-divider"></li>
+                        <li sec:authorize="hasRole('ADMIN')">
+                            <a class="dropdown-item" href="/order/new">
+                                <i class="bi bi-plus-circle"></i> Tạo đơn hàng mới
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- CUSTOMER và ADMIN thấy Giỏ hàng -->
+                <li class="nav-item" sec:authorize="hasAnyRole('CUSTOMER', 'ADMIN')">
+                    <a class="nav-link" href="/cart"><i class="bi bi-cart"></i> Giỏ hàng</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <!-- Hiển thị khi chưa đăng nhập (GUEST) -->
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" href="/login">
+                        <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" href="/register">
+                        <i class="bi bi-person-plus"></i> Đăng ký
+                    </a>
+                </li>
+
+                <!-- Hiển thị khi đã đăng nhập -->
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <span class="navbar-text text-white me-3">
+                        👤 <span sec:authentication="name"></span>
+                        (<span sec:authentication="authorities"></span>)
+                    </span>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <div class="jumbotron">
+        <h1 class="display-4" th:text="${message}">Welcome</h1>
+        <p class="lead">Quản lý cửa hàng trực tuyến - TruongThanhTung_22637091</p>
+        <hr class="my-4">
+        <p><i class="bi bi-clock"></i> Thời gian hiện tại: <span th:text="${currentTime}"></span></p>
+
+        <div class="row mt-4">
+            <!-- Card Sản phẩm - Tất cả mọi người đều thấy -->
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-box-seam" style="font-size: 3rem; color: #0d6efd;"></i>
+                        <h5 class="card-title mt-2">Sản phẩm</h5>
+                        <p class="card-text">Xem danh sách sản phẩm</p>
+                        <a href="/product" class="btn btn-primary">Xem danh sách</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card AI Chat - Tất cả mọi người đều có thể sử dụng -->
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-chat-dots" style="font-size: 3rem; color: #6f42c1;"></i>
+                        <h5 class="card-title mt-2">🤖 AI Assistant</h5>
+                        <p class="card-text">Tra cứu thông tin bằng AI</p>
+                        <a href="/ai/chat" class="btn btn-purple" style="background-color: #6f42c1; color: white;">
+                            <i class="bi bi-robot"></i> Chat ngay
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Khách hàng - Chỉ ADMIN -->
+            <div class="col-md-3" sec:authorize="hasRole('ADMIN')">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-people" style="font-size: 3rem; color: #198754;"></i>
+                        <h5 class="card-title mt-2">Khách hàng</h5>
+                        <p class="card-text">Quản lý khách hàng</p>
+                        <a href="/customer" class="btn btn-success">Quản trị</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Đơn hàng - CUSTOMER và ADMIN -->
+            <div class="col-md-3" sec:authorize="hasAnyRole('CUSTOMER', 'ADMIN')">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-receipt" style="font-size: 3rem; color: #ffc107;"></i>
+                        <h5 class="card-title mt-2">Đơn hàng</h5>
+                        <p class="card-text">Quản lý đơn hàng</p>
+                        <!-- CUSTOMER: Xem đơn của mình -->
+                        <a href="/order/my-orders" class="btn btn-warning" sec:authorize="hasRole('CUSTOMER')">
+                            Đơn của tôi
+                        </a>
+                        <!-- ADMIN: Xem tất cả đơn -->
+                        <a href="/order" class="btn btn-warning" sec:authorize="hasRole('ADMIN')">
+                            Tất cả đơn
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Giỏ hàng - CUSTOMER và ADMIN -->
+            <div class="col-md-3" sec:authorize="hasAnyRole('CUSTOMER', 'ADMIN')">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-cart3" style="font-size: 3rem; color: #dc3545;"></i>
+                        <h5 class="card-title mt-2">Giỏ hàng</h5>
+                        <p class="card-text">Mua sắm trực tuyến</p>
+                        <a href="/cart" class="btn btn-danger">Xem giỏ hàng</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Tìm kiếm - Chỉ ADMIN -->
+            <div class="col-md-3" sec:authorize="hasRole('ADMIN')">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-search" style="font-size: 3rem; color: #0dcaf0;"></i>
+                        <h5 class="card-title mt-2">Tìm kiếm</h5>
+                        <p class="card-text">Tìm kiếm thông tin</p>
+                        <a href="/customer/search" class="btn btn-info">Tìm kiếm</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Đăng nhập/Đăng ký - Chỉ GUEST -->
+            <div class="col-md-3" sec:authorize="!isAuthenticated()">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-person-plus" style="font-size: 3rem; color: #6f42c1;"></i>
+                        <h5 class="card-title mt-2">Tài khoản</h5>
+                        <p class="card-text">Đăng nhập hoặc đăng ký</p>
+                        <a href="/login" class="btn btn-primary btn-sm">Đăng nhập</a>
+                        <a href="/register" class="btn btn-outline-primary btn-sm">Đăng ký</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin hướng dẫn theo role -->
+        <div class="alert alert-info mt-4" sec:authorize="!isAuthenticated()">
+            <h5><i class="bi bi-info-circle"></i> Chào mừng bạn đến với Shopping System!</h5>
+            <p class="mb-0">
+                Bạn có thể xem danh sách sản phẩm. Để mua hàng và quản lý đơn hàng, vui lòng
+                <a href="/login" class="alert-link">đăng nhập</a> hoặc
+                <a href="/register" class="alert-link">đăng ký</a> tài khoản.
+            </p>
+        </div>
+
+        <div class="alert alert-success mt-4" sec:authorize="hasRole('CUSTOMER')">
+            <h5><i class="bi bi-check-circle"></i> Chào khách hàng!</h5>
+            <p class="mb-0">
+                Bạn có thể xem sản phẩm, thêm vào giỏ hàng, đặt hàng và theo dõi đơn hàng của mình.
+            </p>
+        </div>
+
+        <div class="alert alert-warning mt-4" sec:authorize="hasRole('ADMIN')">
+            <h5><i class="bi bi-shield-check"></i> Chào quản trị viên!</h5>
+            <p class="mb-0">
+                Bạn có đầy đủ quyền quản trị hệ thống: Quản lý sản phẩm, khách hàng, đơn hàng và tất cả chức năng khác.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

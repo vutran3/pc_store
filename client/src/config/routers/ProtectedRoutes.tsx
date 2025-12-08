@@ -28,19 +28,34 @@ function ProtectedRoutes({ children }: { children: any }) {
     }
 
     const isPrivateRoute = PRIVATE_ROUTES.find((route: string) => {
-        const pathParts = pathname.split("/");
-        const routeParts = route.split("/");
+        // Loại bỏ phần tử rỗng khi split
+        const pathParts = pathname.split("/").filter(Boolean);
+        const routeParts = route.split("/").filter(Boolean);
 
-        if (routeParts[routeParts.length - 1] === "*" && pathParts[0] === routeParts[0]) return true;
+        // Nếu route có wildcard ở cuối (vd: /products/*)
+        if (routeParts[routeParts.length - 1] === "*") {
+            // So sánh các phần trước wildcard
+            const routeWithoutWildcard = routeParts.slice(0, -1);
+            return routeWithoutWildcard.every((part, index) => pathParts[index] === part);
+        }
+
+        // So sánh exact match
         if (pathParts.length === routeParts.length) {
-            return routeParts.every((routePart: string, index) => pathParts[index] === routePart || routePart === "*");
+            return routeParts.every((routePart: string, index) => pathParts[index] === routePart);
         }
 
         return false;
     });
 
-    if ((isLogin && isPrivateRoute) || !isPrivateRoute) return children;
+    console.log("isPrivateRoute:", isPrivateRoute, "pathname:", pathname);
 
+    // Nếu không phải private route, luôn cho phép truy cập
+    if (!isPrivateRoute) return children;
+
+    // Nếu là private route và đã đăng nhập, cho phép truy cập
+    if (isLogin && isPrivateRoute) return children;
+
+    // Nếu là private route nhưng chưa đăng nhập, redirect về login
     return <Login />;
 }
 

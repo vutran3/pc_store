@@ -1,5 +1,7 @@
 package com.pc.store.server.entities;
 
+import java.util.Set;
+
 import jakarta.validation.constraints.NotNull;
 
 import org.bson.types.ObjectId;
@@ -31,4 +33,5 @@ public class Customer {
     String email;
     String phoneNumber;
     String password;
+    Set<Address> addresses;
 }

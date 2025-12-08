@@ -1,8 +1,8 @@
 package com.pc.store.server.controllers;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
@@ -13,18 +13,6 @@ import com.pc.store.server.dto.request.ApiResponse;
 import com.pc.store.server.entities.Cart;
 import com.pc.store.server.entities.CartItem;
 import com.pc.store.server.entities.Product;
-import com.pc.store.server.services.CartService;
-
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-
-import org.bson.types.ObjectId;
-import org.springframework.web.bind.annotation.*;
-
-import com.pc.store.server.dto.request.ApiResponse;
-import com.pc.store.server.entities.Cart;
-import com.pc.store.server.entities.CartItem;
 import com.pc.store.server.services.CartService;
 
 import lombok.AccessLevel;
@@ -94,15 +82,20 @@ public class CartController {
         List<CartItem> cartItems = cartService.getCartItemsByCustomerId(new ObjectId(customerId));
 
         // Với mỗi CartItem, lấy product detail từ ProductRepository và build response object
-        List<Map<String, Object>> itemsWithProduct = cartItems.stream().map(item -> {
-            Map<String, Object> m = new HashMap<>();
-            Product product = productRepository.findById(item.getProductId()).orElse(null);
-            m.put("product", product); // full product details (null nếu không tìm thấy)
-            m.put("productId", item.getProductId().toHexString());
-            m.put("quantity", item.getQuantity());
-            return m;
-        }).collect(Collectors.toList());
+        List<Map<String, Object>> itemsWithProduct = cartItems.stream()
+                .map(item -> {
+                    Map<String, Object> m = new HashMap<>();
+                    Product product =
+                            productRepository.findById(item.getProductId()).orElse(null);
+                    m.put("product", product); // full product details (null nếu không tìm thấy)
+                    m.put("productId", item.getProductId().toHexString());
+                    m.put("quantity", item.getQuantity());
+                    return m;
+                })
+                .collect(Collectors.toList());
 
-        return ApiResponse.<List<Map<String, Object>>>builder().result(itemsWithProduct).build();
+        return ApiResponse.<List<Map<String, Object>>>builder()
+                .result(itemsWithProduct)
+                .build();
     }
 }
