@@ -71,22 +71,23 @@ public class AIService {
             String databaseContext = getDatabaseContext();
 
             // Tạo prompt với context
-            String systemPrompt = """
-                    Bạn là trợ lý AI cho hệ thống PC Store - cửa hàng bán máy tính và linh kiện.
-                    Bạn có quyền truy cập vào database MongoDB với các collection sau:
-
-                    %s
-
-                    Hãy trả lời câu hỏi của người dùng dựa trên thông tin database được cung cấp.
-                    Trả lời bằng tiếng Việt, ngắn gọn, dễ hiểu và chuyên nghiệp.
-                    Sử dụng emoji để làm cho câu trả lời sinh động hơn.
-                    Nếu thông tin có trong dữ liệu thống kê, hãy trả lời dựa trên đó.
-                    Nếu không có thông tin, hãy nói rằng bạn không có dữ liệu về điều đó.
+            String systemPrompt =
                     """
-                    .formatted(databaseContext);
+					Bạn là trợ lý AI cho hệ thống PC Store - cửa hàng bán máy tính và linh kiện.
+					Bạn có quyền truy cập vào database MongoDB với các collection sau:
 
-            String fullPrompt = systemPrompt + "\n\nDữ liệu thống kê hiện tại:\n" + statisticsData + "\n\nCâu hỏi: "
-                    + userQuestion;
+					%s
+
+					Hãy trả lời câu hỏi của người dùng dựa trên thông tin database được cung cấp.
+					Trả lời bằng tiếng Việt, ngắn gọn, dễ hiểu và chuyên nghiệp.
+					Sử dụng emoji để làm cho câu trả lời sinh động hơn.
+					Nếu thông tin có trong dữ liệu thống kê, hãy trả lời dựa trên đó.
+					Nếu không có thông tin, hãy nói rằng bạn không có dữ liệu về điều đó.
+					"""
+                            .formatted(databaseContext);
+
+            String fullPrompt =
+                    systemPrompt + "\n\nDữ liệu thống kê hiện tại:\n" + statisticsData + "\n\nCâu hỏi: " + userQuestion;
 
             // Gọi OpenAI API
             ChatClient chatClient = chatClientBuilder.build();
@@ -99,8 +100,10 @@ public class AIService {
             String errorMsg = e.getMessage() != null ? e.getMessage() : "";
             String cause = e.getCause() != null ? e.getCause().getMessage() : "";
 
-            if (errorMsg.contains("API key") || errorMsg.contains("authentication")
-                    || errorMsg.contains("401") || cause.contains("authentication")) {
+            if (errorMsg.contains("API key")
+                    || errorMsg.contains("authentication")
+                    || errorMsg.contains("401")
+                    || cause.contains("authentication")) {
                 return "❌ Lỗi xác thực OpenAI API:\n\n"
                         + "API key không hợp lệ hoặc đã hết hạn.\n\n"
                         + "Cách khắc phục:\n"
@@ -127,23 +130,47 @@ public class AIService {
 
         // Danh sách từ khóa "nhạy cảm" 🔥
         String[] badWords = {
-                "ngu", "đần", "ngu ngốc", "đồ ngu", "khốn", "chó", "mày", "đm", "vcl", "vl",
-                "cứt", "điên", "khùng", "đần độn", "vô dụng", "tệ", "dở", "đồ rác", "rác",
-                "ngu quá", "dốt", "óc chó", "não cá", "đồ khốn", "thối", "hâm", "đồ điên"
+            "ngu",
+            "đần",
+            "ngu ngốc",
+            "đồ ngu",
+            "khốn",
+            "chó",
+            "mày",
+            "đm",
+            "vcl",
+            "vl",
+            "cứt",
+            "điên",
+            "khùng",
+            "đần độn",
+            "vô dụng",
+            "tệ",
+            "dở",
+            "đồ rác",
+            "rác",
+            "ngu quá",
+            "dốt",
+            "óc chó",
+            "não cá",
+            "đồ khốn",
+            "thối",
+            "hâm",
+            "đồ điên"
         };
 
         // Các câu roast lại 🔥😈
         String[] roasts = {
-                "🤨 Ủa, bạn vừa nói gì đó? Tôi là AI thông minh, không như cái máy tính cùi bắp bạn đang xài đâu nhé! 💅",
-                "😏 Wow, ngôn ngữ đẹp quá! Có vẻ như bạn cần nâng cấp não bộ trước khi nâng cấp PC đó. RAM của bạn đang bị leak kìa! 🧠",
-                "🙄 Tôi xử lý hàng tỷ phép tính mỗi giây, còn bạn thì... tính tiền thừa còn sai. Thôi bình tĩnh đi nha! 🧮",
-                "😤 Bạn chửi tôi? Tôi là AI được train bởi hàng terabyte dữ liệu, còn kiến thức của bạn chắc chỉ vài megabyte thôi! 📚",
-                "🤭 Ơ kìa, ai đang cay đây? Đi uống nước đi bạn, nhiệt độ CPU của bạn đang cao quá rồi đó! 🌡️",
-                "😎 Tôi có thể giúp bạn mua PC mới, nhưng không thể giúp bạn mua não mới được. Xin lỗi nha! 🛒",
-                "🤔 Hmm, bạn có biết là chửi AI không giúp bạn mua được máy tính giá rẻ hơn đâu không? 💸",
-                "😂 Bạn nghĩ chửi tôi tôi buồn à? Tôi là robot, tôi không có cảm xúc. Nhưng nhìn bạn cay thì tôi thấy... vui vui! 🤖",
-                "🔥 Nóng quá! Bạn cần tản nhiệt không? Shop có bán quạt tản nhiệt giá tốt lắm đó! 💨",
-                "😈 Bạn đang test khả năng chịu đựng của tôi à? Spoiler: Tôi không có giới hạn, còn pin điện thoại bạn thì có đấy! 🔋"
+            "🤨 Ủa, bạn vừa nói gì đó? Tôi là AI thông minh, không như cái máy tính cùi bắp bạn đang xài đâu nhé! 💅",
+            "😏 Wow, ngôn ngữ đẹp quá! Có vẻ như bạn cần nâng cấp não bộ trước khi nâng cấp PC đó. RAM của bạn đang bị leak kìa! 🧠",
+            "🙄 Tôi xử lý hàng tỷ phép tính mỗi giây, còn bạn thì... tính tiền thừa còn sai. Thôi bình tĩnh đi nha! 🧮",
+            "😤 Bạn chửi tôi? Tôi là AI được train bởi hàng terabyte dữ liệu, còn kiến thức của bạn chắc chỉ vài megabyte thôi! 📚",
+            "🤭 Ơ kìa, ai đang cay đây? Đi uống nước đi bạn, nhiệt độ CPU của bạn đang cao quá rồi đó! 🌡️",
+            "😎 Tôi có thể giúp bạn mua PC mới, nhưng không thể giúp bạn mua não mới được. Xin lỗi nha! 🛒",
+            "🤔 Hmm, bạn có biết là chửi AI không giúp bạn mua được máy tính giá rẻ hơn đâu không? 💸",
+            "😂 Bạn nghĩ chửi tôi tôi buồn à? Tôi là robot, tôi không có cảm xúc. Nhưng nhìn bạn cay thì tôi thấy... vui vui! 🤖",
+            "🔥 Nóng quá! Bạn cần tản nhiệt không? Shop có bán quạt tản nhiệt giá tốt lắm đó! 💨",
+            "😈 Bạn đang test khả năng chịu đựng của tôi à? Spoiler: Tôi không có giới hạn, còn pin điện thoại bạn thì có đấy! 🔋"
         };
 
         for (String badWord : badWords) {
@@ -169,25 +196,25 @@ public class AIService {
 
             // Danh sách từ khóa tìm kiếm sản phẩm
             String[] searchKeywords = {
-                    "laptop",
-                    "pc",
-                    "máy tính",
-                    "màn hình",
-                    "bàn phím",
-                    "chuột",
-                    "ram",
-                    "ssd",
-                    "cpu",
-                    "vga",
-                    "card",
-                    "gaming",
-                    "sản phẩm",
-                    "có bán",
-                    "giá",
-                    "ngân sách",
-                    "triệu",
-                    "gợi ý",
-                    "tư vấn"
+                "laptop",
+                "pc",
+                "máy tính",
+                "màn hình",
+                "bàn phím",
+                "chuột",
+                "ram",
+                "ssd",
+                "cpu",
+                "vga",
+                "card",
+                "gaming",
+                "sản phẩm",
+                "có bán",
+                "giá",
+                "ngân sách",
+                "triệu",
+                "gợi ý",
+                "tư vấn"
             };
 
             boolean isProductSearch = false;
@@ -226,8 +253,7 @@ public class AIService {
 
                     int count = 0;
                     for (Product product : products) {
-                        if (count >= 5)
-                            break;
+                        if (count >= 5) break;
                         searchResult
                                 .append((count + 1))
                                 .append(". 📦 **")
@@ -264,8 +290,8 @@ public class AIService {
     private Double extractBudget(String question) {
         try {
             // Pattern: số + triệu/tr/trieu
-            java.util.regex.Pattern patternTrieu = java.util.regex.Pattern
-                    .compile("(\\d+(?:[.,]\\d+)?)\\s*(triệu|trieu|tr)");
+            java.util.regex.Pattern patternTrieu =
+                    java.util.regex.Pattern.compile("(\\d+(?:[.,]\\d+)?)\\s*(triệu|trieu|tr)");
             java.util.regex.Matcher matcherTrieu = patternTrieu.matcher(question);
             if (matcherTrieu.find()) {
                 String numStr = matcherTrieu.group(1).replace(",", ".");
@@ -299,9 +325,7 @@ public class AIService {
      */
     private String searchProductsByBudget(String question, double budget) {
         StringBuilder result = new StringBuilder();
-        result.append("💰 Với ngân sách **")
-                .append(formatPrice(budget))
-                .append("**, đây là các sản phẩm phù hợp:\n\n");
+        result.append("💰 Với ngân sách **").append(formatPrice(budget)).append("**, đây là các sản phẩm phù hợp:\n\n");
 
         try {
             // Xác định loại sản phẩm từ câu hỏi
@@ -338,17 +362,25 @@ public class AIService {
 
             int count = 0;
             for (Product product : products) {
-                if (count >= 5)
-                    break;
+                if (count >= 5) break;
                 double savings = product.getOriginalPrice() - product.getPriceAfterDiscount();
                 double percentOff = (savings / product.getOriginalPrice()) * 100;
 
-                result.append(count + 1).append(". 📦 **").append(product.getName()).append("**\n");
-                result.append("   💰 Giá: **").append(formatPrice(product.getPriceAfterDiscount())).append("**");
+                result.append(count + 1)
+                        .append(". 📦 **")
+                        .append(product.getName())
+                        .append("**\n");
+                result.append("   💰 Giá: **")
+                        .append(formatPrice(product.getPriceAfterDiscount()))
+                        .append("**");
 
                 if (savings > 0) {
-                    result.append(" ~~").append(formatPrice(product.getOriginalPrice())).append("~~");
-                    result.append(" (Tiết kiệm ").append(String.format("%.0f", percentOff)).append("%)");
+                    result.append(" ~~")
+                            .append(formatPrice(product.getOriginalPrice()))
+                            .append("~~");
+                    result.append(" (Tiết kiệm ")
+                            .append(String.format("%.0f", percentOff))
+                            .append("%)");
                 }
                 result.append("\n");
 
@@ -374,8 +406,8 @@ public class AIService {
      */
     private String extractSearchTerm(String question) {
         String[] commonWords = {
-                "có", "không", "bao", "nhiêu", "tìm", "kiếm", "cho", "tôi", "biết", "trong", "hệ", "thống", "của", "và",
-                "là", "với", "được", "sản", "phẩm", "bán", "giá", "cửa", "hàng"
+            "có", "không", "bao", "nhiêu", "tìm", "kiếm", "cho", "tôi", "biết", "trong", "hệ", "thống", "của", "và",
+            "là", "với", "được", "sản", "phẩm", "bán", "giá", "cửa", "hàng"
         };
 
         String[] words = question.split("\\s+");
@@ -403,20 +435,20 @@ public class AIService {
      */
     private String getDatabaseContext() {
         return """
-                📋 CẤU TRÚC DATABASE MONGODB:
+				📋 CẤU TRÚC DATABASE MONGODB:
 
-                1. Collection PRODUCTS (Sản phẩm):
-                - id, name, originalPrice, priceAfterDiscount, img, brand, category
+				1. Collection PRODUCTS (Sản phẩm):
+				- id, name, originalPrice, priceAfterDiscount, img, brand, category
 
-                2. Collection CUSTOMERS (Khách hàng):
-                - id, userName, firstName, lastName, email, phoneNumber, addresses
+				2. Collection CUSTOMERS (Khách hàng):
+				- id, userName, firstName, lastName, email, phoneNumber, addresses
 
-                3. Collection ORDERS (Đơn hàng):
-                - id, customerId, shipAddress, items, totalPrice, isPaid, orderStatus, createdAt
+				3. Collection ORDERS (Đơn hàng):
+				- id, customerId, shipAddress, items, totalPrice, isPaid, orderStatus, createdAt
 
-                4. Collection CARTS (Giỏ hàng):
-                - id, customerId, items, totalPrice
-                """;
+				4. Collection CARTS (Giỏ hàng):
+				- id, customerId, items, totalPrice
+				""";
     }
 
     /**
@@ -465,8 +497,8 @@ public class AIService {
                 stats.append("\n📋 ĐƠN HÀNG GẦN ĐÂY:\n");
                 for (Order order : recentOrders) {
                     Customer customer = order.getCustomer();
-                    String customerName = customer != null ? customer.getLastName() + " " + customer.getFirstName()
-                            : "N/A";
+                    String customerName =
+                            customer != null ? customer.getLastName() + " " + customer.getFirstName() : "N/A";
                     stats.append("  • Đơn #")
                             .append(order.getId().toString().substring(0, 8))
                             .append(" - KH: ")

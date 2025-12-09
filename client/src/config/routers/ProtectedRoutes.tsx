@@ -1,7 +1,10 @@
-import { PRIVATE_ROUTES } from "@/constants/routes";
+import { PUBLIC_ROUTES } from "@/constants/routes";
 import { Login } from "@/pages";
 import { RootState } from "@/redux/store";
 import { checkTokenValid } from "@/redux/thunks/auth";
+import { getCartCount } from "@/redux/thunks/cart";
+import { viewOrder } from "@/redux/thunks/order";
+import { getUserInfo } from "@/redux/thunks/user";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
@@ -11,11 +14,21 @@ function ProtectedRoutes({ children }: { children: any }) {
     const { isLogin, token } = useSelector((state: RootState) => state.auth);
     const [isChecking, setIsChecking] = useState(true);
     const dispatch = useDispatch();
-    console.log(pathname);
+
     useEffect(() => {
         const checkAuth = async () => {
             if (token) {
-                await dispatch(checkTokenValid(token) as any);
+                const { payload } = await dispatch(checkTokenValid(token) as any);
+
+                if (payload.result.valid) {
+                    const { payload: userPayload } = await dispatch(getUserInfo({ token }) as any);
+                    if (userPayload.result) {
+                        await Promise.all([
+                            dispatch(getCartCount({ userId: userPayload.result.id }) as any),
+                            dispatch(viewOrder({ userId: userPayload.result.id }) as any)
+                        ]);
+                    }
+                }
             }
             setIsChecking(false);
         };
@@ -27,35 +40,20 @@ function ProtectedRoutes({ children }: { children: any }) {
         return null;
     }
 
-    const isPrivateRoute = PRIVATE_ROUTES.find((route: string) => {
-        // Loại bỏ phần tử rỗng khi split
-        const pathParts = pathname.split("/").filter(Boolean);
-        const routeParts = route.split("/").filter(Boolean);
+    const isPublicRoute = PUBLIC_ROUTES.find((route: string) => {
+        const pathParts = pathname.split("/");
+        const routeParts = route.split("/");
 
-        // Nếu route có wildcard ở cuối (vd: /products/*)
-        if (routeParts[routeParts.length - 1] === "*") {
-            // So sánh các phần trước wildcard
-            const routeWithoutWildcard = routeParts.slice(0, -1);
-            return routeWithoutWildcard.every((part, index) => pathParts[index] === part);
-        }
-
-        // So sánh exact match
+        if (routeParts[routeParts.length - 1] === "*" && pathParts[0] === routeParts[0]) return true;
         if (pathParts.length === routeParts.length) {
-            return routeParts.every((routePart: string, index) => pathParts[index] === routePart);
+            return routeParts.every((routePart: string, index) => pathParts[index] === routePart || routePart === "*");
         }
 
         return false;
     });
 
-    console.log("isPrivateRoute:", isPrivateRoute, "pathname:", pathname);
+    if ((isLogin && !isPublicRoute) || isPublicRoute) return children;
 
-    // Nếu không phải private route, luôn cho phép truy cập
-    if (!isPrivateRoute) return children;
-
-    // Nếu là private route và đã đăng nhập, cho phép truy cập
-    if (isLogin && isPrivateRoute) return children;
-
-    // Nếu là private route nhưng chưa đăng nhập, redirect về login
     return <Login />;
 }
 

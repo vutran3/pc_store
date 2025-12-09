@@ -29,14 +29,14 @@ public class OrderController {
 
     @PostMapping
     public ApiResponse<Boolean> saveOrder(@RequestBody OrderCreationRequest request) {
-        log.info(request.toString());
         request.getItems().forEach(item -> {
             try {
-                productService.updateInStockProduct(item.getProductId(), item.getQuantity());
+                productService.updateInStockProduct(item.getProduct().getId(), item.getQuantity());
             } catch (Exception e) {
                 log.error("Error: {}", e.getMessage());
             }
         });
+
         if (request.getOrderDate() == null)
             request.setOrderDate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                     .format(LocalDateTime.now(ZoneId.systemDefault())));

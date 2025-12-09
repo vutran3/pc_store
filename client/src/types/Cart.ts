@@ -28,7 +28,6 @@ export interface CartItemWithProduct extends CartItem {
             address?: string;
         };
     };
-    checked?: boolean;
 }
 
 export interface CartState {

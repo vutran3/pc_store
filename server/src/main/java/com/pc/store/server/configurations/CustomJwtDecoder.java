@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.nimbusds.jose.JOSEException;
 import com.pc.store.server.dto.request.IntrospectRequest;
-import com.pc.store.server.services.AuthenticationService;
+import com.pc.store.server.services.impl.AuthenticationService;
 
 import lombok.RequiredArgsConstructor;
 

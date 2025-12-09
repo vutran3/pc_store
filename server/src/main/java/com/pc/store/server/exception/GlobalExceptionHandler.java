@@ -16,7 +16,7 @@ import com.pc.store.server.dto.request.ApiResponse;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(value = RuntimeException.class)
+    @ExceptionHandler(value = Exception.class)
     ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception) {
         ApiResponse apiResponse = new ApiResponse();
         System.out.println("Exception runtime caught: " + exception.getMessage());

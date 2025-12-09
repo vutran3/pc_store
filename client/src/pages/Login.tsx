@@ -138,13 +138,12 @@ function Login() {
 
             <p className="text-center text-sm text-gray-600">
               Chưa có tài khoản?{" "}
-              <button
-                type="button"
-                onClick={() => navigate('/register')}
+              <Link
+                to="/register"
                 className="font-medium text-blue-600 hover:underline"
               >
                 Đăng ký ngay
-              </button>
+              </Link>
             </p>
           </form>
         </div>

@@ -4,11 +4,10 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.pc.store.server.dto.request.AddressRequest;
 import com.pc.store.server.dto.request.ApiResponse;
 import com.pc.store.server.dto.request.CustomerCreationResquest;
 import com.pc.store.server.dto.response.CustomerResponse;
-import com.pc.store.server.services.CustomerService;
+import com.pc.store.server.services.impl.CustomerService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -41,14 +40,6 @@ public class CustomerController {
         log.info("Get my info");
         return ApiResponse.<CustomerResponse>builder()
                 .result(customerService.getInfo())
-                .build();
-    }
-
-    @PostMapping("/address/save")
-    public ApiResponse<CustomerResponse> addAddress(@RequestBody AddressRequest request) {
-        log.info("Add address: {}", request);
-        return ApiResponse.<CustomerResponse>builder()
-                .result(customerService.addAddress(request))
                 .build();
     }
 }

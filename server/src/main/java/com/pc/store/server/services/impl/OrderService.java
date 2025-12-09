@@ -6,21 +6,16 @@ import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
-import com.pc.store.server.dao.CartRepository;
-import com.pc.store.server.dao.CustomerRespository;
-import com.pc.store.server.dao.OrderRepository;
-import com.pc.store.server.dao.ProductRepository;
+import com.pc.store.server.dao.*;
 import com.pc.store.server.dto.request.OrderCreationRequest;
 import com.pc.store.server.entities.*;
 import com.pc.store.server.exception.AppException;
 import com.pc.store.server.exception.ErrorCode;
-import com.pc.store.server.services.EmailService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -31,15 +26,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService {
-
-    CustomerRespository customerRepository;
+    CustomerRepository customerRepository;
     OrderRepository orderRepository;
     EmailService emailService;
     CartRepository cartRepository;
-    ProductRepository productRepository;
 
-    public boolean saveOrder(OrderCreationRequest request) { // faffaf
-        log.info(request.getCustomerId());
+    public boolean saveOrder(OrderCreationRequest request) {
         Customer customer = customerRepository
                 .findById(new ObjectId(request.getCustomerId()))
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
@@ -53,34 +45,18 @@ public class OrderService {
                 .isPaid(request.getIsPaid().equals("true"))
                 .build();
         orderRepository.save(order);
-        // TODO: Fix email configuration before enabling
-        // Xóa các items đã đặt hàng khỏi cart của customer
         try {
-            List<Cart> carts = cartRepository.findAllByCustomerId(new ObjectId(request.getCustomerId()));
-            if (!carts.isEmpty()) {
-                // Chỉ lấy productId (không quan tâm số lượng)
-                Set<ObjectId> orderedProductIds =
-                        request.getItems().stream().map(CartItem::getProductId).collect(Collectors.toSet());
-                orderedProductIds.forEach(id -> System.out.println("Ordered Product ID: " + id.toString()));
-                for (Cart cart : carts) {
-                    System.out.println("Cart BEFORE: " + cart.getItems().size() + " items");
-                    cart.getItems()
-                            .forEach(item -> System.out.println("Cart Item Product ID: "
-                                    + item.getProductId().toString()));
-                    // Giữ lại những items KHÔNG có trong order
-                    List<CartItem> remainingItems = cart.getItems().stream()
-                            .filter(item -> !orderedProductIds.contains(item.getProductId()))
-                            .collect(Collectors.toList());
-
-                    System.out.println("Cart AFTER: " + remainingItems.size() + " items");
-
-                    cart.setItems(remainingItems);
-                    cartRepository.save(cart);
-                }
-            }
+            String emailBody = generateOrderEmailContent(order);
+            emailService.sendOrderConfirmation(customer.getEmail(), "Order Confirmation", emailBody);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        Cart cart = cartRepository
+                .findByCustomerId(new ObjectId(request.getCustomerId()))
+                .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
+        cart.getItems().clear();
+        cartRepository.save(cart);
         return true;
     }
 
@@ -101,24 +77,17 @@ public class OrderService {
         String htmlTemplate = reader.lines().collect(Collectors.joining("\n"));
         StringBuilder orderItemsHtml = new StringBuilder();
         DecimalFormat df = new DecimalFormat("#,###.00");
-
         for (CartItem item : order.getItems()) {
-
-            // fetch productName by id
-            Product product = productRepository
-                    .findById(item.getProductId())
-                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-
             orderItemsHtml
                     .append("<tr>")
                     .append("<td>")
-                    .append(product.getName())
+                    .append(item.getProduct().getName())
                     .append("</td>")
                     .append("<td class=\"text-center\">")
                     .append(item.getQuantity())
                     .append("</td>")
                     .append("<td class=\"text-right\">")
-                    .append(df.format(product.getPriceAfterDiscount()))
+                    .append(df.format(item.getProduct().getPriceAfterDiscount()))
                     .append(" VND</td>")
                     .append("</tr>");
         }

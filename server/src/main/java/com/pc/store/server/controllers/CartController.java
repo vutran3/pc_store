@@ -1,19 +1,14 @@
 package com.pc.store.server.controllers;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
 import org.springframework.web.bind.annotation.*;
 
-import com.pc.store.server.dao.ProductRepository;
 import com.pc.store.server.dto.request.ApiResponse;
 import com.pc.store.server.entities.Cart;
 import com.pc.store.server.entities.CartItem;
-import com.pc.store.server.entities.Product;
-import com.pc.store.server.services.CartService;
+import com.pc.store.server.services.impl.CartService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +20,6 @@ import lombok.experimental.FieldDefaults;
 @RequestMapping("/api/cart")
 public class CartController {
     CartService cartService;
-    ProductRepository productRepository; // <-- inject product repo
 
     @GetMapping("countOfItems")
     public ApiResponse<Integer> countOfItems(@RequestParam String customerId) {
@@ -77,25 +71,8 @@ public class CartController {
     }
 
     @GetMapping("/items/{customerId}")
-    public ApiResponse<List<Map<String, Object>>> getCartItemsByCustomerId(@PathVariable String customerId) {
-        // Lấy CartItem (productId + quantity)
+    public ApiResponse<List<CartItem>> getCartItemsByCustomerId(@PathVariable String customerId) {
         List<CartItem> cartItems = cartService.getCartItemsByCustomerId(new ObjectId(customerId));
-
-        // Với mỗi CartItem, lấy product detail từ ProductRepository và build response object
-        List<Map<String, Object>> itemsWithProduct = cartItems.stream()
-                .map(item -> {
-                    Map<String, Object> m = new HashMap<>();
-                    Product product =
-                            productRepository.findById(item.getProductId()).orElse(null);
-                    m.put("product", product); // full product details (null nếu không tìm thấy)
-                    m.put("productId", item.getProductId().toHexString());
-                    m.put("quantity", item.getQuantity());
-                    return m;
-                })
-                .collect(Collectors.toList());
-
-        return ApiResponse.<List<Map<String, Object>>>builder()
-                .result(itemsWithProduct)
-                .build();
+        return ApiResponse.<List<CartItem>>builder().result(cartItems).build();
     }
 }

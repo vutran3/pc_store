@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import ENDPOINT, { buildProductDetailUrl } from "@/constants/endpoint";
 import { ProductsResponse, Product } from "../slices/product";
 import { get } from "@/services/api.service";
+import { ProductDetail } from "@/types";
 
 interface FetchProductsParams {
     page?: number;
@@ -40,18 +41,21 @@ export const fetchProducts = createAsyncThunk<ProductsResponse, FetchProductsPar
     }
 );
 
-export const fetchProductDetail = createAsyncThunk<Product, string, { rejectValue: string }>(
+export const fetchProductDetail = createAsyncThunk<any, string, { rejectValue: string }>(
     "product/fetchProductDetail",
     async (id, { rejectWithValue }) => {
         try {
-            const url = buildProductDetailUrl(id);
-            const response = await get<ApiResponse<Product>>(url);
+            const response = await get<ApiResponse<Product>>(`${ENDPOINT.PRODUCTS}/id?id=${id}`);
+            const detailsResponse = await get<ApiResponse<ProductDetail>>(`${ENDPOINT.PRODUCT_DETAIL}/${id}`);
 
             if (response.data.code !== 1000) {
                 throw new Error(response.data.message || "API trả về lỗi");
             }
 
-            return response.data.result;
+            return {
+                ...response.data.result,
+                ...detailsResponse.data.result
+            };
         } catch (error: any) {
             if (error.response?.data?.message) {
                 return rejectWithValue(error.response.data.message);
