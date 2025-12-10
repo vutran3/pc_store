@@ -8,18 +8,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.pc.store.server.dao.*;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
-import com.pc.store.server.dao.CartRepository;
-import com.pc.store.server.dao.CustomerRespository;
-import com.pc.store.server.dao.OrderRepository;
-import com.pc.store.server.dao.ProductRepository;
 import com.pc.store.server.dto.request.OrderCreationRequest;
 import com.pc.store.server.entities.*;
 import com.pc.store.server.exception.AppException;
 import com.pc.store.server.exception.ErrorCode;
-import com.pc.store.server.services.EmailService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -30,15 +26,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService {
-
-    CustomerRespository customerRepository;
+    CustomerRepository customerRepository;
     OrderRepository orderRepository;
     EmailService emailService;
     CartRepository cartRepository;
-    ProductRepository productRepository;
 
-    public boolean saveOrder(OrderCreationRequest request) { // faffaf
-        log.info(request.getCustomerId());
+    public boolean saveOrder(OrderCreationRequest request) {
         Customer customer = customerRepository
                 .findById(new ObjectId(request.getCustomerId()))
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
@@ -58,13 +51,10 @@ public class OrderService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // Tìm Cart dựa trên customerId
+
         Cart cart = cartRepository
                 .findByCustomerId(new ObjectId(request.getCustomerId()))
-                .orElse(cartRepository.save(Cart.builder()
-                        .customer(customer)
-                        .items(request.getItems())
-                        .build()));
+                .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
         cart.getItems().clear();
         cartRepository.save(cart);
         return true;
@@ -87,24 +77,17 @@ public class OrderService {
         String htmlTemplate = reader.lines().collect(Collectors.joining("\n"));
         StringBuilder orderItemsHtml = new StringBuilder();
         DecimalFormat df = new DecimalFormat("#,###.00");
-
         for (CartItem item : order.getItems()) {
-
-            // fetch productName by id
-            Product product = productRepository
-                    .findById(item.getProductId())
-                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-
             orderItemsHtml
                     .append("<tr>")
                     .append("<td>")
-                    .append(product.getName())
+                    .append(item.getProduct().getName())
                     .append("</td>")
                     .append("<td class=\"text-center\">")
                     .append(item.getQuantity())
                     .append("</td>")
                     .append("<td class=\"text-right\">")
-                    .append(df.format(product.getPriceAfterDiscount()))
+                    .append(df.format(item.getProduct().getPriceAfterDiscount()))
                     .append(" VND</td>")
                     .append("</tr>");
         }

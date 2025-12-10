@@ -33,6 +33,6 @@ public class CustomerCreationResquest {
 
     @NotNull(message = "Mật khẩu không được để trống")
     @NotBlank(message = "Mật khẩu không được để trống")
-    @Min(value = 5, message = "Mật khẩu phải có ít nhất 5 ký tự")
+    @Size(min = 5, message = "Mật khẩu phải có ít nhất 5 ký tự")
     String password;
 }

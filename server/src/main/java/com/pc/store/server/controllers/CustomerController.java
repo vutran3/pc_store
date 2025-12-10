@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import com.pc.store.server.dto.request.ApiResponse;
 import com.pc.store.server.dto.request.CustomerCreationResquest;
 import com.pc.store.server.dto.response.CustomerResponse;
-import com.pc.store.server.services.CustomerService;
+import com.pc.store.server.services.impl.CustomerService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.pc.store.server.dto.request.ApiResponse;
 import com.pc.store.server.entities.Cart;
 import com.pc.store.server.entities.CartItem;
-import com.pc.store.server.services.CartService;
+import com.pc.store.server.services.impl.CartService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

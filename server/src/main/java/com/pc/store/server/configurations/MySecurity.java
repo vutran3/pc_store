@@ -1,3 +1,4 @@
+
 package com.pc.store.server.configurations;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,21 +33,6 @@ public class MySecurity {
         "/api/product-detail"
     };
 
-    private final String[] PUBLIC_ENDPOINTS_OPTIONS = {
-        "/api/customers/register",
-        "/api/auth/log-in",
-        "/api/auth/introspect",
-        "/api/auth/logout",
-        "/api/auth/refresh",
-        "/api/products",
-        "/api/products/asc",
-        "/api/products/desc",
-        "/api/products/{name}",
-        "/api/product-detail/{id}",
-        "/api/product-detail",
-        "/api/customers/info"
-    };
-
     @Autowired
     private CustomJwtDecoder customJwtDecoder;
 
@@ -52,6 +40,7 @@ public class MySecurity {
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
     }
+
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
@@ -64,15 +53,26 @@ public class MySecurity {
         source.registerCorsConfiguration("/**", corsConfiguration); // Áp dụng cho tất cả các endpoint
         return source;
     }
+    
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        grantedAuthoritiesConverter.setAuthorityPrefix("");
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(authRes -> authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
-                .permitAll()
-                .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GET)
-                .permitAll()
-                .anyRequest()
-                .authenticated());
+        httpSecurity
+                .authorizeHttpRequests(authRes -> authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GET)
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated());
         httpSecurity.oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.decoder(customJwtDecoder))
                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
         httpSecurity.csrf(AbstractHttpConfigurer::disable).cors(cors -> cors.configurationSource(corsConfigurationSource()));;

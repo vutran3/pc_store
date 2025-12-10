@@ -40,17 +40,18 @@ public class ProductController {
         return ApiResponse.<Page<Product>>builder().result(products).build();
     }
 
-    @GetMapping("{name}")
-    public ApiResponse<Page<Product>> getProductByName(
-            @PathVariable String name, @RequestParam(defaultValue = "0") int page) {
-        var products = productService.getProductByName(name, page, size);
-        return ApiResponse.<Page<Product>>builder().result(products).build();
-    }
-
     @GetMapping("/id")
     public ApiResponse<ProductResponse> getProductById(@RequestParam String id) {
         var product = productService.getProductById(id);
         return ApiResponse.<ProductResponse>builder().result(product).build();
+    }
+
+
+    @GetMapping("/{name}")
+    public ApiResponse<Page<Product>> getProductByName(
+            @PathVariable String name, @RequestParam(defaultValue = "0") int page) {
+        var products = productService.getProductByName(name, page, size);
+        return ApiResponse.<Page<Product>>builder().result(products).build();
     }
 
     @PostMapping("/add")
