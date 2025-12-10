@@ -122,7 +122,9 @@ export default function Header() {
             >
                 <div className="container mx-auto px-3 sm:px-6 py-4">
                     <nav className="flex items-center justify-between">
-                        <Monitor className="h-6 w-6 sm:h-7 sm:w-7 text-white cursor-pointer hover:scale-110 transition-all" />
+                        <Link to="/">
+                            <Monitor className="h-6 w-6 sm:h-7 sm:w-7 text-white cursor-pointer hover:scale-110 transition-all" />
+                        </Link>
 
                         <div className="hidden md:flex items-center space-x-6 lg:space-x-10">
                             <Link

@@ -12,7 +12,7 @@ import com.pc.store.server.entities.Order;
 
 @Repository
 public interface OrderRepository extends MongoRepository<Order, ObjectId> {
+    Order findOrderByCustomerId(ObjectId customerId);
     List<Order> findAllByCustomerId(ObjectId customerId);
-
     Page<Order> findAllBy(Pageable pageable);
 }

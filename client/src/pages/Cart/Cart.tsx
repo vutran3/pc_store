@@ -1,4 +1,4 @@
-import { ShipCOD, VNPay } from "@/assets/cart";
+import { PayPal, ShipCOD } from "@/assets/cart";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,7 +23,6 @@ function Cart() {
     const dispatch = useDispatch();
     const { toast } = useToast();
     const { info: user } = useSelector((state: RootState) => state.user);
-    const { token } = useSelector((state: RootState) => state.auth);
     const [isLoading, setIsloading] = useState(false);
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [address, setAddress] = useState(localStorage.getItem("addressShipping") || "");
@@ -180,14 +179,6 @@ function Cart() {
         if (paymentMethod === "ship") {
             setIsOrdering(true);
             try {
-                console.log({
-                    customerId: user?.id,
-                    shipAddress: address,
-                    items,
-                    totalPrice,
-                    orderStatus: "DELIVERING",
-                    isPaid: "false"
-                });
                 const result = await post<any>(ENDPOINTS.ORDER, {
                     customerId: user?.id,
                     shipAddress: address,
@@ -234,19 +225,14 @@ function Cart() {
             } finally {
                 setIsOrdering(false);
             }
-        } else if (paymentMethod === "vnpay") {
+        } else if (paymentMethod === "paypal") {
             setIsOrdering(true);
             try {
-                const response = await get<any>(`${ENDPOINTS.VNPAY}?amount=${totalPrice}`);
+                const response = await get<any>(
+                    `${ENDPOINTS.PAYPAL}?amount=${totalPrice}&userId=${user?.id}&shipAddress=${address}`
+                );
                 if (response.data.code === 1000) {
-                    const orderInfo = {
-                        customerId: user?.id,
-                        shipAddress: address,
-                        items,
-                        totalPrice,
-                        orderStatus: ""
-                    };
-                    document.cookie = `orderInfo=${JSON.stringify(orderInfo)}; path=/; max-age=3600`;
+                    localStorage.setItem("paymentId", response.data.result.paymentId as string);
                     window.location.href = response.data.result.url;
                 } else {
                     toast({
@@ -255,11 +241,7 @@ function Cart() {
                     });
                 }
             } catch (error) {
-                toast({
-                    title: "Hết phiên đăng nhập vuiý đăng nhập lại",
-                    variant: "destructive"
-                });
-                window.location.href = "/login";
+                console.log(error);
             } finally {
                 setIsOrdering(false);
             }
@@ -392,12 +374,12 @@ function Cart() {
                                         </div>
                                         <div className="col-span-1">
                                             <Label
-                                                htmlFor="vnpay"
+                                                htmlFor="paypal"
                                                 className="flex flex-col items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-orange-50 hover:border-orange-500 [&:has([data-state=checked])]:border-orange-500 [&:has([data-state=checked])]:bg-orange-50"
                                             >
-                                                <img src={VNPay} alt="VNPay" className="w-8 h-8" />
-                                                <RadioGroupItem value="vnpay" id="vnpay" className="sr-only" />
-                                                <span className="text-sm text-center">Thanh toán bằng VNPay</span>
+                                                <img src={PayPal} alt="paypal" className="w-8 h-8" />
+                                                <RadioGroupItem value="paypal" id="paypal" className="sr-only" />
+                                                <span className="text-sm text-center">Thanh toán bằng PayPal</span>
                                             </Label>
                                         </div>
                                     </RadioGroup>

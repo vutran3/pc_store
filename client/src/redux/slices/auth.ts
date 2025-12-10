@@ -52,9 +52,7 @@ const authSlice = createSlice({
             .addCase(checkTokenValid.fulfilled, (state, action: PayloadAction<CheckTokenValidResponse>) => {
                 state.status = "succeeded";
                 state.isLogin = action.payload.result.valid;
-                if (!action.payload.result.valid) {
-                    clearAuthState(state);
-                }
+                if (!action.payload.result.valid) clearAuthState(state);
             })
             .addCase(checkTokenValid.rejected, (state, action) => {
                 state.status = "failed";

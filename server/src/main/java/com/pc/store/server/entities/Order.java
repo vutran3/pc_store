@@ -34,6 +34,7 @@ public class Order {
 
     String shipAddress;
     String orderDate;
+    String currency;
     List<CartItem> items;
     double totalPrice;
     boolean isPaid;

@@ -53,10 +53,15 @@ function Order() {
                                         </div>
                                     </div>
                                     <div className="text-lg font-semibold text-primary">
-                                        {new Intl.NumberFormat("vi-VN", {
-                                            style: "currency",
-                                            currency: "VND"
-                                        }).format(order.totalPrice)}
+                                        {order.currency === "USD"
+                                            ? new Intl.NumberFormat("en-US", {
+                                                  style: "currency",
+                                                  currency: "USD"
+                                              }).format(order.totalPrice)
+                                            : new Intl.NumberFormat("vi-VN", {
+                                                  style: "currency",
+                                                  currency: "VND"
+                                              }).format(order.totalPrice)}
                                     </div>
                                 </div>
 
@@ -78,7 +83,7 @@ function Order() {
                             <CardContent className="pt-4">
                                 <div className="flex items-center gap-2">
                                     <Package className="h-4 w-4 text-gray-500" />
-                                    <span className="text-sm text-gray-600">{order.items.length} sản phẩm</span>
+                                    <span className="text-sm text-gray-600">{order.items?.length} sản phẩm</span>
                                 </div>
                             </CardContent>
                         </Card>

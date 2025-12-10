@@ -32,7 +32,8 @@ const ENDPOINT = {
     UPDATE_PRODUCT_DETAIL: `/api/admin/update-product-detail`,
     USER_INFO: `/api/customers/info`,
     ORDER: `/api/orders`,
-    VNPAY: `/api/payment/create_payment`
+    PAYPAL: `/api/payment/create_payment`,
+    PAYMENT_STATUS: `/api/payment`
 };
 
 export const buildProductsUrl = (page: number = 0, size: number = 10) => {

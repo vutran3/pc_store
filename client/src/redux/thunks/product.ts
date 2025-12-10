@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import ENDPOINT, { buildProductDetailUrl } from "@/constants/endpoint";
+import ENDPOINT from "@/constants/endpoint";
 import { ProductsResponse, Product } from "../slices/product";
 import { get } from "@/services/api.service";
 import { ProductDetail } from "@/types";

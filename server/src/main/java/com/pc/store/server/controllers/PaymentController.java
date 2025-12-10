@@ -1,30 +1,34 @@
 package com.pc.store.server.controllers;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.paypal.api.payments.*;
+import com.paypal.base.rest.APIContext;
+import com.paypal.base.rest.PayPalRESTException;
+import com.pc.store.server.dao.CustomerRepository;
+import com.pc.store.server.dao.OrderRepository;
+import com.pc.store.server.dao.PaymentRepository;
+import com.pc.store.server.dto.response.PaymentResponse;
+import com.pc.store.server.entities.Customer;
+import com.pc.store.server.entities.OrderStatus;
+import com.pc.store.server.enums.PaymentStatus;
+import com.pc.store.server.exception.AppException;
+import com.pc.store.server.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
-import com.pc.store.server.configurations.VNPayConfig;
 import com.pc.store.server.dto.request.ApiResponse;
-import com.pc.store.server.dto.request.PaymentRequest;
-import com.pc.store.server.dto.response.PaymentResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 
-@RestController
+@Controller
 @RequestMapping("/api/payment")
 @RequiredArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
@@ -32,95 +36,152 @@ import lombok.extern.slf4j.Slf4j;
 public class PaymentController {
 
     @NonFinal
-    @Value("${vnp.return.url}")
-    public String vnp_ReturnUrl;
+    private final String failedStatus = PaymentStatus.FAILED.toString().toLowerCase();
+    @NonFinal
+    private final String approvedStatus = PaymentStatus.APPROVED.toString().toLowerCase();
+    private final OrderRepository orderRepository;
+    private final CustomerRepository customerRepository;
+    @NonFinal
+    @Value("${paypal.cancel-url}")
+    private String cancelUrl;
+    @NonFinal
+    @Value("${paypal.return-url}")
+    private String returnUrl;
+    private final APIContext apiContext;
+    private final PaymentRepository paymentRepository;
 
+    @ResponseBody
     @GetMapping("/create_payment")
-    public ApiResponse<?> createPayment(HttpServletRequest request, @RequestParam(value = "amount") String amount)
-            throws UnsupportedEncodingException {
+    public ApiResponse<?> createPayment(HttpServletRequest request,
+                                        @RequestParam(value = "amount") String amt,
+                                        @RequestParam(value = "userId") String userId,
+                                        @RequestParam(value = "shipAddress") String address) throws PayPalRESTException {
+        double totalAmount = Double.parseDouble(amt) / 26000;
 
-        String orderType = "other";
-        long amountInt = Integer.parseInt(amount) * 100L;
+        String currency = "USD";
+        String description = "Thanh toan hoa don";
+        String paymentMethod = "PAYPAL";
 
-        String vnp_TxnRef = VNPayConfig.getRandomNumber(8);
-        String vnp_IpAddr = VNPayConfig.getIpAddress(request);
+        Payment payment = new Payment();
+        String id = UUID.randomUUID().toString();
+        Amount amount = new Amount();
 
-        String vnp_TmnCode = VNPayConfig.vnp_TmnCode;
-        Map<String, String> vnp_Params = new HashMap<>();
-        vnp_Params.put("vnp_Version", VNPayConfig.vnp_Version);
-        vnp_Params.put("vnp_Command", VNPayConfig.vnp_Command);
-        vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
-        vnp_Params.put("vnp_Amount", String.valueOf(amountInt));
-        vnp_Params.put("vnp_CurrCode", "VND");
-        vnp_Params.put("vnp_BankCode", "NCB");
-        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
-        vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_ReturnUrl", vnp_ReturnUrl);
-        vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
-        vnp_Params.put("vnp_OrderType", orderType);
-        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-        String vnp_CreateDate = formatter.format(cld.getTime());
-        vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
+        amount.setCurrency(currency);
+        amount.setTotal(String.format(Locale.US, "%.2f", totalAmount));
 
-        cld.add(Calendar.MINUTE, 5);
-        String vnp_ExpireDate = formatter.format(cld.getTime());
-        vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
+        Transaction transaction = new Transaction();
+        transaction.setAmount(amount);
+        transaction.setDescription(description);
 
-        List fieldNames = new ArrayList(vnp_Params.keySet());
-        Collections.sort(fieldNames);
-        StringBuilder hashData = new StringBuilder();
-        StringBuilder query = new StringBuilder();
-        Iterator itr = fieldNames.iterator();
-        while (itr.hasNext()) {
-            String fieldName = (String) itr.next();
-            String fieldValue = vnp_Params.get(fieldName);
-            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
-                // Build hash data
-                hashData.append(fieldName);
-                hashData.append('=');
-                hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-                // Build query
-                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()));
-                query.append('=');
-                query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-                if (itr.hasNext()) {
-                    query.append('&');
-                    hashData.append('&');
-                }
+        List<Transaction> transactions = new ArrayList<Transaction>();
+        transactions.add(transaction);
+
+        Payer payer = new Payer();
+        payer.setPaymentMethod(paymentMethod);
+
+        RedirectUrls redirectUrls = new RedirectUrls();
+        redirectUrls.setCancelUrl(cancelUrl + "/" + id);
+        redirectUrls.setReturnUrl(returnUrl + "/" + id);
+
+        payment.setIntent("sale");
+        payment.setPayer(payer);
+        payment.setTransactions(transactions);
+        payment.setRedirectUrls(redirectUrls);
+
+        Payment createdPayment = payment.create(apiContext);
+        com.pc.store.server.entities.Order order = new com.pc.store.server.entities.Order();
+        Customer customer = customerRepository.findById(new ObjectId(userId)).orElse(null);
+
+        if(customer != null) {
+            order.setCustomer(customer);
+            order.setShipAddress(address);
+            order.setTotalPrice(totalAmount);
+            order.setCurrency(currency);
+            order.setPaid(false);
+            orderRepository.save(order);
+        }
+
+        for(Links links : createdPayment.getLinks()) {
+            if (links.getRel().equals("approval_url")) {
+                log.info(links.getHref());
+                var payload = PaymentResponse.builder()
+                        .status("Ok")
+                        .message("Successfully")
+                        .paymentId(id)
+                        .URL(links.getHref())
+                        .build();
+
+                com.pc.store.server.entities.Payment paymentEntity = new com.pc.store.server.entities.Payment();
+                paymentEntity.setPaymentId(id);
+                paymentEntity.setCurrency(currency);
+                paymentEntity.setDescription(description);
+                paymentEntity.setAmount(totalAmount);
+                paymentEntity.setStatus(PaymentStatus.CREATED.toString());
+                paymentEntity.setUserId(userId);
+                paymentRepository.save(paymentEntity);
+                return ApiResponse.builder().result(payload).build();
             }
         }
-        String queryUrl = query.toString();
-        String vnp_SecureHash = VNPayConfig.hmacSHA512(VNPayConfig.secretKey, hashData.toString());
-        queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-        String paymentUrl = VNPayConfig.vnp_PayUrl + "?" + queryUrl;
 
-        var payment = PaymentRequest.builder()
-                .status("Ok")
-                .message("Successfully")
-                .URL(paymentUrl)
-                .build();
-        return ApiResponse.builder().result(payment).build();
+        throw new AppException(ErrorCode.INVALID_PAYMENT);
     }
 
-    @RequestMapping("/payment_status")
-    public ApiResponse<PaymentResponse> getPaymentInfo(
-            @RequestParam(value = "vnp_ResponseCode") String vnp_ResponseCode) {
-        if (vnp_ResponseCode.equals("00")) {
-            return ApiResponse.<PaymentResponse>builder()
-                    .result(PaymentResponse.builder()
-                            .status("YES")
-                            .message("Successfully")
-                            .build())
-                    .build();
-        } else {
-            return ApiResponse.<PaymentResponse>builder()
-                    .result(PaymentResponse.builder()
-                            .status("NO")
-                            .message("Failed")
-                            .build())
-                    .build();
+    @GetMapping("/inspect/{paymentId}")
+    public String inspectPaymentStatus(@PathVariable("paymentId") String pId, HttpServletRequest http) throws Exception {
+        String paymentId = http.getParameter("paymentId");
+        String payerId = http.getParameter("PayerID");
+
+        if(payerId == null || paymentId == null) return PaymentStatus.FAILED.toString();
+
+        Payment payment = new Payment();
+        payment.setId(paymentId);
+
+        PaymentExecution execution = new PaymentExecution();
+        execution.setPayerId(payerId);
+
+        Payment executedPayment = payment.execute(apiContext, execution);
+
+        com.pc.store.server.entities.Payment paymentEntity = paymentRepository.findPaymentsByPaymentId(pId);
+
+        if (executedPayment.getState().equals(approvedStatus)) paymentEntity.setStatus(approvedStatus);
+        else paymentEntity.setStatus(failedStatus);
+
+        paymentRepository.save(paymentEntity);
+        List<com.pc.store.server.entities.Order> orders = orderRepository.findAllByCustomerId(new ObjectId(paymentEntity.getUserId()));
+        if(!orders.isEmpty()) {
+            com.pc.store.server.entities.Order order = orders.get(0);
+            order.setPaid(true);
+            order.setOrderStatus(OrderStatus.DELIVERING);
+            orderRepository.save(order);
         }
+
+        return executedPayment.getState().toLowerCase();
     }
+
+    @GetMapping("/cancel/{paymentId}")
+    public String discardPayment(@PathVariable("paymentId") String paymentId, HttpServletRequest http) throws PayPalRESTException {
+        com.pc.store.server.entities.Payment paymentEntity = paymentRepository.findPaymentsByPaymentId(paymentId);
+
+        paymentEntity.setStatus(failedStatus);
+        paymentRepository.save(paymentEntity);
+
+        com.pc.store.server.entities.Order order = orderRepository.findOrderByCustomerId(new ObjectId(paymentEntity.getUserId()));
+        if(order != null) {
+            order.setPaid(false);
+            order.setOrderStatus(OrderStatus.CANCELLED);
+
+        }
+
+        return failedStatus.toLowerCase();
+    }
+
+    @GetMapping("/{paymentId}")
+    @ResponseBody
+    public String getPaymentStatus(@PathVariable("paymentId") String paymentId, HttpServletRequest http) throws PayPalRESTException {
+        com.pc.store.server.entities.Payment paymentEntity = paymentRepository.findPaymentsByPaymentId(paymentId);
+        if(paymentEntity == null) return "unknow";
+        return paymentEntity.getStatus();
+    }
+
+
 }

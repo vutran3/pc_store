@@ -24,8 +24,9 @@ public enum ErrorCode {
     PRODUCT_NOT_UPDATED_SUCCESSFULLY(2003, "Product not created successfully", HttpStatus.INTERNAL_SERVER_ERROR),
     PRODUCT_DETAIL_NOT_CREATED(2005, "Product detail not created successfully", HttpStatus.INTERNAL_SERVER_ERROR),
     PRODUCT_DELETE_FAILED(2006, "Product delete failed", HttpStatus.INTERNAL_SERVER_ERROR),
-    PRODUCT_DETAIL_UPDATE_FAILED(2007, "Product detail update failed", HttpStatus.INTERNAL_SERVER_ERROR)
-    ;
+    PRODUCT_DETAIL_UPDATE_FAILED(2007, "Product detail update failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_PAYMENT(4000, "Invalid Payment", HttpStatus.BAD_REQUEST);
+
     ErrorCode(int code, String message, HttpStatus httpStatus) {
         this.code = code;
         this.message = message;

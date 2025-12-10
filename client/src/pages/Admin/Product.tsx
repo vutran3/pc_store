@@ -23,7 +23,6 @@ const Product = () => {
     const [isDetailLoading, setIsDetailLoading] = useState(false);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const { token } = useSelector((state: RootState) => state.auth);
-    const [productDetail, setProductDetail] = useState<ProductDetail | null>(null);
 
     const [detailFormData, setDetailFormData] = useState<ProductDetail>({
         processor: "",
@@ -227,7 +226,6 @@ const Product = () => {
             const response = await get<{ result: ProductDetail }>(`${ENDPOINTS.PRODUCT_DETAIL}/${id}`);
 
             const detail = response.data.result;
-            setProductDetail(detail);
 
             setDetailFormData({
                 processor: detail.processor || "",
@@ -578,7 +576,6 @@ const Product = () => {
                 onOpenChange={(open) => {
                     setIsDetailOpen(open);
                     if (!open) {
-                        // setProductDetail(null);
                         setDetailFormData({
                             id: "",
                             processor: "",

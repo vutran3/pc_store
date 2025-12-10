@@ -17,20 +17,26 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class MySecurity {
-    private final String[] PUBLIC_ENDPOINTS = {
-        "/api/customers/register", "/api/auth/log-in", "/api/auth/introspect", "/api/auth/logout", "/api/auth/refresh",
+    private final String[] PUBLIC_ENDPOINTS_POST = {
+            "/api/customers/register", "/api/auth/log-in",
+            "/api/auth/introspect", "/api/auth/logout", "/api/auth/refresh",
     };
     private final String[] PUBLIC_ENDPOINTS_GET = {
-        "/api/products",
-        "/api/products/asc",
-        "/api/products/desc",
-        "/api/products/{name}",
-        "/api/product-detail/{id}",
-        "/api/product-detail"
+            "/images/payment-done.png",
+            "/api/payment/inspect/{paymentId}",
+            "/api/payment/cancel/{paymentId}",
+            "/api/products",
+            "/api/products/asc",
+            "/api/products/desc",
+            "/api/products/{name}",
+            "/api/product-detail/{id}",
+            "/api/product-detail"
     };
 
     @Autowired
@@ -53,7 +59,7 @@ public class MySecurity {
         source.registerCorsConfiguration("/**", corsConfiguration); // Áp dụng cho tất cả các endpoint
         return source;
     }
-    
+
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
@@ -67,7 +73,7 @@ public class MySecurity {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-                .authorizeHttpRequests(authRes -> authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
+                .authorizeHttpRequests(authRes -> authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS_POST)
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GET)
                         .permitAll()

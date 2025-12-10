@@ -141,53 +141,55 @@ function OrderDetail() {
 
                     <CardContent className="pt-6">
                         <div className="space-y-4">
-                            {order.items.map((item, index) => (
-                                <div
-                                    key={index}
-                                    className="flex items-start gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow"
-                                >
-                                    <img
-                                        src={item.product.img}
-                                        alt={item.product.name}
-                                        className="w-32 h-32 object-cover rounded-md"
-                                    />
-                                    <div className="flex-1">
-                                        <h3 className="font-medium text-gray-900 hover:text-orange-500 cursor-pointer">
-                                            {item.product.name}
-                                        </h3>
-                                        <div className="mt-2 text-sm text-gray-500">
-                                            Nhà cung cấp: {item.product.supplier.name} - {item.product.supplier.address}
-                                        </div>
-                                        <div className="mt-3 flex items-center justify-between">
-                                            <div className="flex items-center gap-6">
-                                                <div className="text-sm text-gray-600">
-                                                    Số lượng: <span className="font-medium">{item.quantity}</span>
-                                                </div>
-                                                <div className="text-sm text-gray-600">
-                                                    Giảm giá:{" "}
-                                                    <span className="font-medium text-red-500">
-                                                        {item.product.discountPercent}%
-                                                    </span>
-                                                </div>
+                            {order.items &&
+                                order.items.map((item, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-start gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow"
+                                    >
+                                        <img
+                                            src={item.product.img}
+                                            alt={item.product.name}
+                                            className="w-32 h-32 object-cover rounded-md"
+                                        />
+                                        <div className="flex-1">
+                                            <h3 className="font-medium text-gray-900 hover:text-orange-500 cursor-pointer">
+                                                {item.product.name}
+                                            </h3>
+                                            <div className="mt-2 text-sm text-gray-500">
+                                                Nhà cung cấp: {item.product.supplier.name} -{" "}
+                                                {item.product.supplier.address}
                                             </div>
-                                            <div className="text-right">
-                                                <div className="text-sm line-through text-gray-400">
-                                                    {new Intl.NumberFormat("vi-VN", {
-                                                        style: "currency",
-                                                        currency: "VND"
-                                                    }).format(item.product.originalPrice)}
+                                            <div className="mt-3 flex items-center justify-between">
+                                                <div className="flex items-center gap-6">
+                                                    <div className="text-sm text-gray-600">
+                                                        Số lượng: <span className="font-medium">{item.quantity}</span>
+                                                    </div>
+                                                    <div className="text-sm text-gray-600">
+                                                        Giảm giá:{" "}
+                                                        <span className="font-medium text-red-500">
+                                                            {item.product.discountPercent}%
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-base font-medium text-orange-500">
-                                                    {new Intl.NumberFormat("vi-VN", {
-                                                        style: "currency",
-                                                        currency: "VND"
-                                                    }).format(item.product.priceAfterDiscount * item.quantity)}
+                                                <div className="text-right">
+                                                    <div className="text-sm line-through text-gray-400">
+                                                        {new Intl.NumberFormat("vi-VN", {
+                                                            style: "currency",
+                                                            currency: "VND"
+                                                        }).format(item.product.originalPrice)}
+                                                    </div>
+                                                    <div className="text-base font-medium text-orange-500">
+                                                        {new Intl.NumberFormat("vi-VN", {
+                                                            style: "currency",
+                                                            currency: "VND"
+                                                        }).format(item.product.priceAfterDiscount * item.quantity)}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
                         </div>
 
                         <div className="mt-8 flex justify-end border-t pt-6">
