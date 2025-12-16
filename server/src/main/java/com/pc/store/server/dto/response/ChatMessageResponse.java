@@ -17,6 +17,7 @@ public class ChatMessageResponse {
     String conversationId;
     boolean me;
     String message;
+    String content;
     Customer sender;
     Instant createdDate;
 }

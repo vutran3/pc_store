@@ -22,6 +22,7 @@ public class ChatMessage {
 
     @Indexed
     String conversationId;
+    String content;
 
     String message;
 

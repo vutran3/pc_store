@@ -24,7 +24,8 @@ const SocketClient = () => {
             const actualData = typeof data === "string" ? JSON.parse(data) : data;
 
             console.log('🔔 SocketClient received RAW data:', actualData);
-            const messageText = actualData.message || actualData.content;
+            const messageText = actualData.message;
+            const messageContent = actualData.content;
             const createdDate = typeof actualData.createdDate === 'number'
                 ? (actualData.createdDate > 1e12 ? actualData.createdDate : actualData.createdDate * 1000)
                 : (actualData.createdDate ? new Date(actualData.createdDate).getTime() : Date.now());
@@ -33,7 +34,7 @@ const SocketClient = () => {
                 id: actualData.id,
                 conversationId: actualData.conversationId,
                 sender: actualData.sender,
-                content: messageText,
+                content: messageContent || "",
                 message: messageText,
                 createdDate,
                 me: actualData.me
