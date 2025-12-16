@@ -1,11 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RootState } from "@/redux/store";
 import { MapPin, Package, Truck, User, XCircle } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { viewOrder } from "@/redux/thunks/order";
 
 function Order() {
-    const { orders } = useSelector((state: RootState) => state.order);
+    const dispatch = useDispatch();
+    const { orders, status, error } = useSelector((state: RootState) => state.order);
+    const userId = useSelector((state: RootState) => state.user.info?.id);
+
+    useEffect(() => {
+        if (userId) {
+            dispatch(viewOrder({ userId }));
+        }
+    }, [userId, dispatch]);
 
     return (
         <div className="container mx-auto p-6 pt-24">
@@ -17,6 +27,13 @@ function Order() {
                 <span className="text-orange-500">Đơn hàng</span>
             </div>
             <h1 className="text-3xl font-semibold text-gray-800 mb-6">Đơn hàng của bạn</h1>
+
+            {status === "loading" && (
+                <div className="text-center text-gray-500">Đang tải đơn hàng...</div>
+            )}
+            {status === "failed" && (
+                <div className="text-center text-red-500">{error || "Không thể tải đơn hàng."}</div>
+            )}
 
             <div className="grid gap-6">
                 {orders.map((order: any) => (

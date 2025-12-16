@@ -3,8 +3,14 @@
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 const ENDPOINT = {
+    CHAT: {
+        MY_CONVERSATIONS: `${BASE_URL}/api/conversations/my-conversations`,
+        CREATE_CONVERSATION: `${BASE_URL}/api/conversations/create`,
+        CREATE_MESSAGE: `${BASE_URL}/api/messages/create`,
+        GET_CONVERSATION_MESSAGES: (conversationId: string) => `${BASE_URL}/api/messages/get/${conversationId}`,
+    },
     LOGIN: `${BASE_URL}/api/auth/log-in`,
-    REGISTER: `${BASE_URL}/api/auth/customers/register`,
+    REGISTER: `${BASE_URL}/api/customers/register`,
     LOGOUT: `${BASE_URL}/api/auth/logout`,
     REFRESH_TOKEN: `${BASE_URL}/api/auth/refresh`,
     INTROSPECT: `${BASE_URL}/api/auth/introspect`,

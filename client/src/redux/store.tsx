@@ -1,10 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { authReducer } from "@/redux/slices";
+
 import { productReducer } from "@/redux/slices/product";
 import cartReducer from "@/redux/slices/cart";
 import adminReducer from "@/redux/slices/admin";
 import userReducer from "@/redux/slices/user";
 import orderReducer from "@/redux/slices/order";
+import chatReducer from "@/redux/slices/chat";
 
 const store = configureStore({
     reducer: {
@@ -13,7 +15,8 @@ const store = configureStore({
         cart: cartReducer,
         admin: adminReducer,
         user: userReducer,
-        order: orderReducer
+        order: orderReducer,
+        chat: chatReducer
     }
 });
 

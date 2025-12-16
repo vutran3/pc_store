@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
         System.out.println("Exception runtime caught: " + exception.getMessage());
         apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
         apiResponse.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
-
+        exception.printStackTrace();
         return ResponseEntity.badRequest().body(apiResponse);
     }
 

@@ -143,6 +143,14 @@ export default function Header() {
                             >
                                 Products
                             </Link>
+                            {isAdmin && (
+                                <Link
+                                    className="text-sm lg:text-base font-medium hover:text-[#f76808] transition-all hover:scale-110"
+                                    to="/messages"
+                                >
+                                    Messages
+                                </Link>
+                            )}
                         </div>
 
                         {/* Mobile Menu */}
@@ -160,11 +168,10 @@ export default function Header() {
                                 <div className="relative">
                                     <Link
                                         to="/cart"
-                                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full cursor-pointer hover:ring-2 hover:ring-orange-400 hover:scale-105 transition-all ${
-                                            cartCount == 0
+                                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full cursor-pointer hover:ring-2 hover:ring-orange-400 hover:scale-105 transition-all ${cartCount == 0
                                                 ? "bg-orange-500/10"
                                                 : "bg-gradient-to-br from-orange-400 to-orange-600"
-                                        } flex items-center justify-center shadow-md`}
+                                            } flex items-center justify-center shadow-md`}
                                     >
                                         <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                                     </Link>
@@ -247,11 +254,10 @@ export default function Header() {
                         ) : (
                             <Link
                                 to="/login"
-                                className={`${
-                                    isScrolled
+                                className={`${isScrolled
                                         ? "px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base gap-1.5 sm:gap-2"
                                         : "p-2.5 sm:p-3"
-                                } text-white rounded-md flex items-center group relative`}
+                                    } text-white rounded-md flex items-center group relative`}
                             >
                                 <LogIn
                                     className={`${isScrolled ? "w-4 h-4 sm:w-5 sm:h-5" : "w-5 h-5 sm:w-6 sm:h-6"}`}
