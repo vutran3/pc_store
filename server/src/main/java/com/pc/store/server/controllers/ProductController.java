@@ -46,7 +46,6 @@ public class ProductController {
         return ApiResponse.<ProductResponse>builder().result(product).build();
     }
 
-
     @GetMapping("/{name}")
     public ApiResponse<Page<Product>> getProductByName(
             @PathVariable String name, @RequestParam(defaultValue = "0") int page) {

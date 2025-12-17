@@ -25,7 +25,9 @@ public enum ErrorCode {
     PRODUCT_DETAIL_NOT_CREATED(2005, "Product detail not created successfully", HttpStatus.INTERNAL_SERVER_ERROR),
     PRODUCT_DELETE_FAILED(2006, "Product delete failed", HttpStatus.INTERNAL_SERVER_ERROR),
     PRODUCT_DETAIL_UPDATE_FAILED(2007, "Product detail update failed", HttpStatus.INTERNAL_SERVER_ERROR),
-    INVALID_PAYMENT(4000, "Invalid Payment", HttpStatus.BAD_REQUEST);
+    INVALID_PAYMENT(4000, "Invalid Payment", HttpStatus.BAD_REQUEST),
+    CONVERSATION_NOT_FOUND(1009, "Chat conversation not found", HttpStatus.NOT_FOUND)
+    ;
 
     ErrorCode(int code, String message, HttpStatus httpStatus) {
         this.code = code;

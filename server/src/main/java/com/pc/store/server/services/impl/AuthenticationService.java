@@ -163,4 +163,14 @@ public class AuthenticationService {
         }
         return stringJoiner.toString();
     }
+
+    public String decode(String token) {
+        try {
+            var signedJWT = verifyToken(token, false);
+            return signedJWT.getJWTClaimsSet().getSubject();
+        } catch (ParseException | JOSEException e) {
+            log.error("Cannot decode token");
+            throw new RuntimeException(e);
+        }
+    }
 }

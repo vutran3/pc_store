@@ -19,11 +19,20 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearCart } from "./redux/slices/cart";
 import ENDPOINT from "./constants/endpoint";
 import { RootState } from "./redux/store";
+import { useAppSelector } from "./hooks";
+import MessagesPage from "./pages/Messages";
+import SocketClient from "./SocketClient";
+import AIChatModal from "./components/AIChatModal";
+import SellerChatModal from "./components/SellerChatModal";
 
 function App() {
     const dispatch = useDispatch();
 
     const { info: user } = useSelector((state: RootState) => state.user);
+    const roles = useAppSelector((state: RootState) => state.user.info?.roles || []);
+    const isAdmin = roles.some((r: any) => r.name === "ADMIN");
+    const isLogin = useAppSelector((state: RootState) => state.auth.isLogin);
+
     const clearCartApi = async (customerId: string) => {
         const token = localStorage.getItem("token");
         const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
@@ -70,10 +79,15 @@ function App() {
                     <Route path="admin/products" element={<Product />} />
                     <Route path="admin/customers" element={<Customer />} />
                     <Route path="admin/orders" element={<OrderPage />} />
+                    {isAdmin && <Route path="/messages" element={<MessagesPage />} />}
                     <Route path="*" element={<NotFound />} />
                 </Routes>
+                {isLogin && <SocketClient />}
             </ProtectedRoutes>
             <Toaster />
+
+            {!isAdmin && <AIChatModal />}
+            {!isAdmin && <SellerChatModal />}
         </BrowserRouter>
     );
 }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.extern.slf4j.Slf4j;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,11 +30,18 @@ public class MyConfiguration {
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(ObjectId.class, new ToStringSerializer());
-        mapper.registerModule(module);
+
+        // Hỗ trợ Java 8 Date/Time (LocalDate, LocalDateTime, ...)
+        mapper.registerModule(new JavaTimeModule());
+
+        // Serialize ObjectId -> String
+        SimpleModule objectIdModule = new SimpleModule();
+        objectIdModule.addSerializer(ObjectId.class, new ToStringSerializer());
+        mapper.registerModule(objectIdModule);
+
         return mapper;
     }
+
 
     @Bean
     public Cloudinary cloudinary() {

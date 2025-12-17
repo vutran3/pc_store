@@ -8,10 +8,15 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.pc.store.server.dao.CartRepository;
+import com.pc.store.server.dao.ConversationRepository;
 import com.pc.store.server.dao.CustomerRespository;
 import com.pc.store.server.dto.request.CustomerCreationResquest;
 import com.pc.store.server.dto.response.CustomerResponse;
+import com.pc.store.server.entities.Cart;
+import com.pc.store.server.entities.Conversation;
 import com.pc.store.server.entities.Customer;
 import com.pc.store.server.exception.AppException;
 import com.pc.store.server.exception.ErrorCode;
@@ -22,17 +27,23 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CustomerService {
+    private final CartRepository cartRepository;
 
     final CustomerRespository customerRespository;
     final MongoTemplate mongoTemplate;
     final PasswordEncoder passwordEncoder;
     final CustomerMapper customerMapper;
+    final ConversationService conversationService;
+    final ConversationRepository conversationRepository;
 
+    @Transactional
     public CustomerResponse createCustomer(CustomerCreationResquest customerCreationResquest) {
         synchronized (this) {
             Query query = new Query();
@@ -52,6 +63,20 @@ public class CustomerService {
                     update,
                     FindAndModifyOptions.options().returnNew(true).upsert(true),
                     Customer.class);
+            // create conversation
+            Customer admin = customerRespository
+                    .findByUserName("admin")
+                    .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+            Conversation conversation = Conversation.builder()
+                    .participants(List.of(customer, admin))
+                    .participantsHash(conversationService.generateParticipantHash(
+                            List.of(String.valueOf(customer.getId()), String.valueOf(admin.getId()))))
+                    .build();
+            conversationRepository.save(conversation);
+
+            // create cart
+            Cart cart = Cart.builder().customer(customer).items(List.of()).build();
+            cartRepository.save(cart);
             return customerMapper.toCustomerResponse(customer);
         }
     }

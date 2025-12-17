@@ -1,4 +1,3 @@
-
 package com.pc.store.server.configurations;
 
 import org.springframework.beans.factory.annotation.Autowired;

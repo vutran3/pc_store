@@ -1,4 +1,3 @@
-
 package com.pc.store.server.services.impl;
 
 import java.util.ArrayList;
@@ -15,6 +14,7 @@ import com.pc.store.server.dao.ProductRepository;
 import com.pc.store.server.entities.Cart;
 import com.pc.store.server.entities.CartItem;
 import com.pc.store.server.entities.Customer;
+import com.pc.store.server.entities.Product;
 import com.pc.store.server.exception.AppException;
 import com.pc.store.server.exception.ErrorCode;
 

@@ -17,7 +17,6 @@ public class VNPayConfig {
     public static String vnp_Version = "2.1.0";
     public static String vnp_Command = "pay";
 
-
     public static String Sha256(String message) {
         String digest = null;
         try {

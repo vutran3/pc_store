@@ -91,7 +91,7 @@ export default function Header() {
     return (
         <>
             <header
-                className={`flex justify-center items-center text-white fixed w-[90%] sm:w-[95%] top-5 z-50 max-h-16 rounded-full backdrop-blur-md left-1/2 -translate-x-1/2 transition-all duration-500  bg-black/50`}
+                className={`flex justify-center items-center text-white fixed w-[90%] sm:w-[95%] top-2 z-50 max-h-16 rounded-full backdrop-blur-md left-1/2 -translate-x-1/2 transition-all duration-500  bg-black/50`}
                 style={{
                     boxShadow: isScrolled
                         ? ` 0 0 40px rgba(251,146,60,0.6),
@@ -145,6 +145,14 @@ export default function Header() {
                             >
                                 Products
                             </Link>
+                            {isAdmin && (
+                                <Link
+                                    className="text-sm lg:text-base font-medium hover:text-[#f76808] transition-all hover:scale-110"
+                                    to="/messages"
+                                >
+                                    Messages
+                                </Link>
+                            )}
                         </div>
 
                         {/* Mobile Menu */}
