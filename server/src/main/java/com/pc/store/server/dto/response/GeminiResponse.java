@@ -1,8 +1,8 @@
 package com.pc.store.server.dto.response;
 
+import java.util.List;
 
 import lombok.Data;
-import java.util.List;
 
 @Data
 public class GeminiResponse {
@@ -12,10 +12,12 @@ public class GeminiResponse {
     public static class Candidate {
         private Content content;
     }
+
     @Data
     public static class Content {
         private List<Part> parts;
     }
+
     @Data
     public static class Part {
         private String text;

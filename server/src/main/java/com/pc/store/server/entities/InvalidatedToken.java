@@ -19,6 +19,7 @@ import lombok.experimental.FieldDefaults;
 public class InvalidatedToken {
     @Id
     String id;
+
     String token;
     Date expiryDate;
 }

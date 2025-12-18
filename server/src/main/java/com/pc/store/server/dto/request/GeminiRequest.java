@@ -1,8 +1,9 @@
 package com.pc.store.server.dto.request;
 
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Data;
-import java.util.List;
 
 @Data
 @Builder
@@ -29,4 +30,3 @@ public class GeminiRequest {
         private String data;
     }
 }
-

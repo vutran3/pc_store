@@ -1,5 +1,14 @@
 package com.pc.store.server.services.impl;
 
+import org.bson.types.ObjectId;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.stereotype.Service;
+
 import com.pc.store.server.dao.*;
 import com.pc.store.server.dto.request.CreationProductRequest;
 import com.pc.store.server.dto.request.UpdateProductDetailReq;
@@ -12,18 +21,11 @@ import com.pc.store.server.exception.ErrorCode;
 import com.pc.store.server.mapper.CustomerMapper;
 import com.pc.store.server.mapper.ProductDetailMapper;
 import com.pc.store.server.mapper.ProductMapper;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.bson.types.ObjectId;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.security.access.prepost.PostAuthorize;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -90,7 +92,9 @@ public class AdminService {
     }
 
     public ProductDetailResponse updateDetail(UpdateProductDetailReq request) {
-        ProductDetail detail = productDetailRepository.findByProductId(new ObjectId(request.getProductId())).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_DETAIL_NOT_FOUND));
+        ProductDetail detail = productDetailRepository
+                .findByProductId(new ObjectId(request.getProductId()))
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_DETAIL_NOT_FOUND));
         Product product = productRepository
                 .findById(new ObjectId(request.getProductId()))
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));

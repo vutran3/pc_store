@@ -1,12 +1,14 @@
 package com.pc.store.server.controllers;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.*;
+
 import com.pc.store.server.dto.request.ApiResponse;
 import com.pc.store.server.entities.Product;
 import com.pc.store.server.services.impl.RecommendationService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/recommendations")
@@ -19,8 +21,6 @@ public class RecommendationController {
     public ApiResponse<List<Product>> getRecommendations(@PathVariable String customerId) {
         // Lấy 4 sản phẩm để hiển thị trên UI
         List<Product> products = recommendationService.getRecommendedProducts(customerId, 4);
-        return ApiResponse.<List<Product>>builder()
-                .result(products)
-                .build();
+        return ApiResponse.<List<Product>>builder().result(products).build();
     }
 }

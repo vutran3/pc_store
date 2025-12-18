@@ -21,21 +21,20 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class MySecurity {
     private final String[] PUBLIC_ENDPOINTS_POST = {
-            "/api/customers/register", "/api/auth/log-in",
-            "/api/auth/introspect", "/api/auth/logout", "/api/auth/refresh",
+        "/api/customers/register", "/api/auth/log-in", "/api/auth/introspect", "/api/auth/logout", "/api/auth/refresh",
     };
     private final String[] PUBLIC_ENDPOINTS_GET = {
-            "/images/*",
-            "/api/payment/inspect/{paymentId}",
-            "/api/payment/cancel/{paymentId}",
-            "/api/products",
-            "/api/products/asc",
-            "/api/products/desc",
-            "/api/products/{name}",
-            "/api/product-detail/{id}",
-            "/api/product-detail",
-            "/api/newest",
-            "/api/best-selling"
+        "/images/*",
+        "/api/payment/inspect/{paymentId}",
+        "/api/payment/cancel/{paymentId}",
+        "/api/products",
+        "/api/products/asc",
+        "/api/products/desc",
+        "/api/products/{name}",
+        "/api/product-detail/{id}",
+        "/api/product-detail",
+        "/api/newest",
+        "/api/best-selling"
     };
 
     @Autowired
@@ -71,16 +70,18 @@ public class MySecurity {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                .authorizeHttpRequests(authRes -> authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS_POST)
-                        .permitAll()
-                        .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GET)
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated());
+        httpSecurity.authorizeHttpRequests(authRes -> authRes.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS_POST)
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GET)
+                .permitAll()
+                .anyRequest()
+                .authenticated());
         httpSecurity.oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.decoder(customJwtDecoder))
                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
-        httpSecurity.csrf(AbstractHttpConfigurer::disable).cors(cors -> cors.configurationSource(corsConfigurationSource()));;
+        httpSecurity
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+        ;
         return httpSecurity.build();
     }
 }

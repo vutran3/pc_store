@@ -7,10 +7,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.pc.store.server.dao.CustomerRepository;
 import com.pc.store.server.dao.RoleRepository;
 import com.pc.store.server.entities.Customer;
 import com.pc.store.server.entities.Role;
-import com.pc.store.server.dao.CustomerRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +49,9 @@ public class RoleInitializer {
                 log.info("Default roles initialized successfully: USER and ADMIN");
             } else {
                 log.info("Roles already exist, skipping role initialization");
-                adminRole = roleRepository.findById("ADMIN").orElseThrow(() -> new RuntimeException("ADMIN role not found"));
+                adminRole = roleRepository
+                        .findById("ADMIN")
+                        .orElseThrow(() -> new RuntimeException("ADMIN role not found"));
             }
 
             if (!customerRepository.existsByUserName("admin")) {

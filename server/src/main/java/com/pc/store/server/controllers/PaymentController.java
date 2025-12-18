@@ -4,19 +4,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import com.paypal.api.payments.*;
-import com.paypal.base.rest.APIContext;
-import com.paypal.base.rest.PayPalRESTException;
-import com.pc.store.server.dao.CustomerRepository;
-import com.pc.store.server.dao.OrderRepository;
-import com.pc.store.server.dao.PaymentRepository;
-import com.pc.store.server.dto.request.PaymentRequest;
-import com.pc.store.server.dto.response.PaymentResponse;
-import com.pc.store.server.entities.Customer;
-import com.pc.store.server.entities.OrderStatus;
-import com.pc.store.server.enums.PaymentStatus;
-import com.pc.store.server.exception.AppException;
-import com.pc.store.server.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.bson.types.ObjectId;
@@ -24,13 +11,25 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import com.paypal.api.payments.*;
+import com.paypal.base.rest.APIContext;
+import com.paypal.base.rest.PayPalRESTException;
+import com.pc.store.server.dao.CustomerRepository;
+import com.pc.store.server.dao.OrderRepository;
+import com.pc.store.server.dao.PaymentRepository;
 import com.pc.store.server.dto.request.ApiResponse;
+import com.pc.store.server.dto.request.PaymentRequest;
+import com.pc.store.server.dto.response.PaymentResponse;
+import com.pc.store.server.entities.Customer;
+import com.pc.store.server.entities.OrderStatus;
+import com.pc.store.server.enums.PaymentStatus;
+import com.pc.store.server.exception.AppException;
+import com.pc.store.server.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-
 
 @Controller
 @RequestMapping("/api/payment")
@@ -41,24 +40,28 @@ public class PaymentController {
 
     @NonFinal
     private final String failedStatus = PaymentStatus.FAILED.toString().toLowerCase();
+
     @NonFinal
     private final String approvedStatus = PaymentStatus.APPROVED.toString().toLowerCase();
+
     private final OrderRepository orderRepository;
     private final CustomerRepository customerRepository;
+
     @NonFinal
     @Value("${paypal.cancel-url}")
     private String cancelUrl;
+
     @NonFinal
     @Value("${paypal.return-url}")
     private String returnUrl;
+
     private final APIContext apiContext;
     private final PaymentRepository paymentRepository;
 
     @ResponseBody
     @PostMapping("/create_payment")
-    public ApiResponse<?> createPayment(HttpServletRequest request,
-                                        @RequestBody PaymentRequest paymentRequest
-    ) throws PayPalRESTException {
+    public ApiResponse<?> createPayment(HttpServletRequest request, @RequestBody PaymentRequest paymentRequest)
+            throws PayPalRESTException {
         double totalAmount = Double.parseDouble(paymentRequest.getAmount()) / 26000;
         String currency = "USD";
         String description = "Thanh toan hoa don";
@@ -92,9 +95,11 @@ public class PaymentController {
 
         Payment createdPayment = payment.create(apiContext);
         com.pc.store.server.entities.Order order = new com.pc.store.server.entities.Order();
-        Customer customer = customerRepository.findById(new ObjectId(paymentRequest.getUserId())).orElse(null);
+        Customer customer = customerRepository
+                .findById(new ObjectId(paymentRequest.getUserId()))
+                .orElse(null);
 
-        if(customer != null) {
+        if (customer != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String orderDate = LocalDateTime.now().format(formatter);
 
@@ -110,7 +115,7 @@ public class PaymentController {
             orderRepository.save(order);
         }
 
-        for(Links links : createdPayment.getLinks()) {
+        for (Links links : createdPayment.getLinks()) {
             if (links.getRel().equals("approval_url")) {
                 log.info(links.getHref());
                 var payload = PaymentResponse.builder()
@@ -136,11 +141,12 @@ public class PaymentController {
     }
 
     @GetMapping("/inspect/{paymentId}")
-    public String inspectPaymentStatus(@PathVariable("paymentId") String pId, HttpServletRequest http) throws Exception {
+    public String inspectPaymentStatus(@PathVariable("paymentId") String pId, HttpServletRequest http)
+            throws Exception {
         String paymentId = http.getParameter("paymentId");
         String payerId = http.getParameter("PayerID");
 
-        if(payerId == null || paymentId == null) return PaymentStatus.FAILED.toString();
+        if (payerId == null || paymentId == null) return PaymentStatus.FAILED.toString();
 
         Payment payment = new Payment();
         payment.setId(paymentId);
@@ -156,8 +162,9 @@ public class PaymentController {
         else paymentEntity.setStatus(failedStatus);
 
         paymentRepository.save(paymentEntity);
-        List<com.pc.store.server.entities.Order> orders = orderRepository.findAllByCustomerId(new ObjectId(paymentEntity.getUserId()));
-        if(!orders.isEmpty()) {
+        List<com.pc.store.server.entities.Order> orders =
+                orderRepository.findAllByCustomerId(new ObjectId(paymentEntity.getUserId()));
+        if (!orders.isEmpty()) {
             com.pc.store.server.entities.Order order = orders.get(0);
             order.setPaid(true);
             order.setOrderStatus(OrderStatus.DELIVERING);
@@ -168,17 +175,18 @@ public class PaymentController {
     }
 
     @GetMapping("/cancel/{paymentId}")
-    public String discardPayment(@PathVariable("paymentId") String paymentId, HttpServletRequest http) throws PayPalRESTException {
+    public String discardPayment(@PathVariable("paymentId") String paymentId, HttpServletRequest http)
+            throws PayPalRESTException {
         com.pc.store.server.entities.Payment paymentEntity = paymentRepository.findPaymentsByPaymentId(paymentId);
 
         paymentEntity.setStatus(failedStatus);
         paymentRepository.save(paymentEntity);
 
-        com.pc.store.server.entities.Order order = orderRepository.findOrderByCustomerId(new ObjectId(paymentEntity.getUserId()));
-        if(order != null) {
+        com.pc.store.server.entities.Order order =
+                orderRepository.findOrderByCustomerId(new ObjectId(paymentEntity.getUserId()));
+        if (order != null) {
             order.setPaid(false);
             order.setOrderStatus(OrderStatus.CANCELLED);
-
         }
 
         return failedStatus.toLowerCase();
@@ -186,11 +194,10 @@ public class PaymentController {
 
     @GetMapping("/{paymentId}")
     @ResponseBody
-    public String getPaymentStatus(@PathVariable("paymentId") String paymentId, HttpServletRequest http) throws PayPalRESTException {
+    public String getPaymentStatus(@PathVariable("paymentId") String paymentId, HttpServletRequest http)
+            throws PayPalRESTException {
         com.pc.store.server.entities.Payment paymentEntity = paymentRepository.findPaymentsByPaymentId(paymentId);
-        if(paymentEntity == null) return "unknow";
+        if (paymentEntity == null) return "unknow";
         return paymentEntity.getStatus();
     }
-
-
 }

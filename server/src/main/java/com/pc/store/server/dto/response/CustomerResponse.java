@@ -1,6 +1,7 @@
 package com.pc.store.server.dto.response;
 
-import com.pc.store.server.entities.Role;
+import java.util.Set;
+
 import org.bson.types.ObjectId;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -10,8 +11,6 @@ import com.pc.store.server.entities.Role;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
