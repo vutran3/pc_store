@@ -1,120 +1,114 @@
-import { Button } from "@/components/ui/button";
-import {
-  Cpu,
-  HardDrive,
-  Keyboard,
-  Menu,
-  Monitor,
-  Mouse,
-  Search,
-  ShoppingCart,
-} from "lucide-react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Login, NotFound, Register } from "./pages";
+import Home from "./pages/Home";
+import ProductsPage from "./pages/Product/Product";
+import ProductDetail from "./pages/Product/ProductDetail";
+import ScrollToTop from "./components/ScrollToTop";
+import ProtectedRoutes from "./config/routers/ProtectedRoutes";
+import Cart from "./pages/Cart/Cart";
+import { Toaster } from "./components/ui/toaster";
+import { Customer, OrderPage, Product } from "./pages/Admin";
+import About from "./pages/About";
+import Header from "./components/layout/Header";
+import Order from "./pages/Order";
+import OrderDetail from "./pages/Order/[id]";
+import { useEffect, useState } from "react"; // Added useState
+import { del, get } from "./services/api.service";
+import { ENDPOINTS } from "./constants";
+import { useDispatch, useSelector } from "react-redux";
+import { clearCart } from "./redux/slices/cart";
+import ENDPOINT from "./constants/endpoint";
+import { RootState } from "./redux/store";
+import { useAppSelector } from "./hooks";
+import MessagesPage from "./pages/Messages";
+import SocketClient from "./SocketClient";
+import AIChatModal from "./components/AIChatModal";
+import SellerChatModal from "./components/SellerChatModal";
 
 function App() {
-  return (
-    <div className="min-h-screen bg-background flex flex-col items-center">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center items-center">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
-            <div className="hidden md:flex items-center gap-6">
-              <a className="flex items-center gap-2" href="/">
-                <Monitor className="h-6 w-6" />
-                <span className="font-bold">PC Store</span>
-              </a>
-              <nav className="flex items-center gap-6 text-sm font-medium">
-                <a
-                  className="hover:text-foreground/80 transition-colors"
-                  href="/products"
-                >
-                  Products
-                </a>
-                <a
-                  className="hover:text-foreground/80 transition-colors"
-                  href="/builds"
-                >
-                  PC Builds
-                </a>
-                <a
-                  className="hover:text-foreground/80 transition-colors"
-                  href="/about"
-                >
-                  About
-                </a>
-              </nav>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <input
-                type="search"
-                placeholder="Search products..."
-                className="w-full h-9 rounded-md border bg-background px-8 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              />
-            </div>
-            <Button variant="outline" size="icon">
-              <ShoppingCart className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
+    const dispatch = useDispatch();
+    const [activeChat, setActiveChat] = useState<"ai" | "seller" | null>(null);
 
-      {/* Hero Section */}
-      <section className="container py-12">
-        <div className="rounded-lg bg-card px-6 py-10 md:px-12 md:py-16 text-center">
-          <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4">
-            Build Your Dream PC
-          </h1>
-          <p className="text-muted-foreground max-w-[700px] mx-auto mb-8">
-            High-performance custom PCs built with premium components. Find the
-            perfect parts for your next build.
-          </p>
-          <Button size="lg">Shop Now</Button>
-        </div>
-      </section>
+    const { info: user } = useSelector((state: RootState) => state.user);
+    const roles = useAppSelector((state: RootState) => state.user.info?.roles || []);
+    const isAdmin = roles.some((r: any) => r.name === "ADMIN");
+    const isLogin = useAppSelector((state: RootState) => state.auth.isLogin);
 
-      {/* Categories */}
-      <section className="container py-12">
-        <h2 className="text-2xl font-bold tracking-tight mb-8">
-          Shop by Category
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <a
-            className="flex flex-col items-center justify-center p-6 rounded-lg border hover:border-foreground transition-colors"
-            href="/category/processors"
-          >
-            <Cpu className="h-12 w-12 mb-4" />
-            <h3 className="font-semibold">Processors</h3>
-          </a>
-          <a
-            className="flex flex-col items-center justify-center p-6 rounded-lg border hover:border-foreground transition-colors"
-            href="/category/storage"
-          >
-            <HardDrive className="h-12 w-12 mb-4" />
-            <h3 className="font-semibold">Storage</h3>
-          </a>
-          <a
-            className="flex flex-col items-center justify-center p-6 rounded-lg border hover:border-foreground transition-colors"
-            href="/category/keyboards"
-          >
-            <Keyboard className="h-12 w-12 mb-4" />
-            <h3 className="font-semibold">Keyboards</h3>
-          </a>
-          <a
-            className="flex flex-col items-center justify-center p-6 rounded-lg border hover:border-foreground transition-colors"
-            href="/category/mice"
-          >
-            <Mouse className="h-12 w-12 mb-4" />
-            <h3 className="font-semibold">Mice</h3>
-          </a>
-        </div>
-      </section>
-    </div>
-  );
+    const clearCartApi = async (customerId: string) => {
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+        await del(ENDPOINT.CART.DELETE_ALL, { customerId }, headers);
+    };
+
+    useEffect(() => {
+        const paymentId = localStorage.getItem("paymentId");
+        let timerId: any = null;
+
+        if (paymentId && user?.id) {
+            timerId = setInterval(() => {
+                get(`${ENDPOINTS.PAYMENT_STATUS}/${paymentId}`).then((res) => {
+                    const status = res.data;
+                    if (status && status === "approved") {
+                        // --- THÊM DÒNG NÀY ---
+                        clearInterval(timerId);
+                        // ---------------------
+
+                        localStorage.removeItem("paymentId");
+                        clearCartApi(user?.id);
+                        dispatch(clearCart());
+                    }
+                });
+            }, 1000);
+        }
+
+        return () => {
+            if (timerId) clearInterval(timerId);
+        };
+    }, [user]);
+
+    return (
+        <BrowserRouter>
+            <ScrollToTop />
+            <Header />
+            <ProtectedRoutes>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/products" element={<ProductsPage />} />
+                    <Route path="/products/:id" element={<ProductDetail />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/order" element={<Order />} />
+                    <Route path="/order/:id" element={<OrderDetail />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="admin/products" element={<Product />} />
+                    <Route path="admin/customers" element={<Customer />} />
+                    <Route path="admin/orders" element={<OrderPage />} />
+                    {isAdmin && <Route path="/messages" element={<MessagesPage />} />}
+                    <Route path="*" element={<NotFound />} />
+                </Routes>
+                {isLogin && <SocketClient />}
+            </ProtectedRoutes>
+            <Toaster />
+
+            {!isAdmin && (
+                <div className="flex">
+                    <AIChatModal
+                        isOpen={activeChat === "ai"}
+                        onOpen={() => setActiveChat("ai")}
+                        onClose={() => setActiveChat(null)}
+                        isHidden={activeChat === "seller"}
+                    />
+                    <SellerChatModal
+                        isOpen={activeChat === "seller"}
+                        onOpen={() => setActiveChat("seller")}
+                        onClose={() => setActiveChat(null)}
+                        isHidden={activeChat === "ai"}
+                    />
+                </div>
+            )}
+        </BrowserRouter>
+    );
 }
 
 export default App;

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+        <style>
+            a.button {
+                display: block;
+                padding: 10px 20px;
+                background-color: #3182ce;; /* Màu nền */
+                color: white;              /* Màu chữ */
+                text-decoration: none;     /* Bỏ gạch chân */
+                border-radius: 5px;        /* Bo góc */
+                font-size: 16px;
+                font-weight: bold;
+                transition: background-color 0.3s ease;
+            }
+
+            a.button:hover {
+                background-color: #45a049; /* Màu khi hover */
+            }
+        </style>
+    </head>
+    <body style="display: flex; flex-direction: column; align-items: center; height: 100vh; width: 100vw; overflow: hidden;">
+        <img src="../static/images/payment-done.png" th:src="@{/images/payment-done.png}" width="300" style="margin-top: 80px" alt="Payment Successful" />
+        <a href="https://ecommerce.nonegroup.io.vn/" class="button">Trở lại</a>
+    </body>
+</html>
