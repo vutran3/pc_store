@@ -3,7 +3,6 @@ import { messageApi, Conversation } from "@/services/api/messageApi";
 import { useAppSelector, useAppDispatch } from "@/hooks";
 import { RootState } from "@/redux/store";
 import { setMessages, ChatMessage } from "@/redux/slices/chat";
-import { UserLogo } from "@/assets/logo";
 
 function getConversationDisplayName(conversationName?: string) {
     if (!conversationName) return "";
@@ -21,9 +20,9 @@ const AdminChatTab = () => {
     const dispatch = useAppDispatch();
     const currentUsername = useAppSelector((state: RootState) => state.user.info?.userName);
 
+    // ✅ Lấy messages từ Redux
     const messagesFromRedux = useAppSelector((state: RootState) => {
         const msgs = selected ? state.chat.messages[selected.id] || [] : [];
-        console.log(`📬 AdminChatTab - Redux messages:`, msgs.length, msgs);
         return msgs;
     });
 
@@ -47,10 +46,12 @@ const AdminChatTab = () => {
         messageApi
             .getMessages(selected.id)
             .then((msgs) => {
+                // ✅ Dispatch vào Redux thay vì setState
                 const formattedMsgs: ChatMessage[] = (msgs || []).map((msg: any) => ({
                     id: msg.id,
                     conversationId: selected.id,
                     sender: msg.sender,
+                    // Fallback logic khi load history
                     content: msg.message || msg.content || "",
                     message: msg.message || msg.content || "",
                     createdDate: msg.createdDate > 1e12 ? msg.createdDate : msg.createdDate * 1000,
@@ -80,7 +81,6 @@ const AdminChatTab = () => {
             try {
                 await messageApi.sendMessage(selected.id, input.trim());
                 setInput("");
-                // ✅ Socket sẽ tự động nhận và Redux sẽ update
             } catch (error) {
                 console.error("Error sending message:", error);
             }
@@ -107,16 +107,15 @@ const AdminChatTab = () => {
         <div
             style={{
                 display: "flex",
+                height: "70vh",
                 background: "#fff",
                 borderRadius: 12,
-                border: "1px solid #0001",
-                height: "100%"
+                boxShadow: "0 2px 8px #0001"
             }}
         >
+            {/* Sidebar: Danh sách hội thoại */}
             <div style={{ width: 320, borderRight: "1px solid #eee", overflowY: "auto" }}>
-                <div style={{ padding: 16, fontWeight: 600, fontSize: 18, borderWidth: "0 0 1px 0" }}>
-                    Tất cả hội thoại
-                </div>
+                <div style={{ padding: 16, fontWeight: 600, fontSize: 18 }}>Tất cả hội thoại</div>
                 {conversations.length === 0 && <div style={{ padding: 24, color: "#888" }}>Không có hội thoại nào</div>}
                 {conversations.map((conv) => (
                     <div
@@ -129,12 +128,7 @@ const AdminChatTab = () => {
                             borderBottom: "1px solid #f5f5f5"
                         }}
                     >
-                        <div style={{ fontWeight: 600 }}>
-                            <span className="flex gap-1 items-center">
-                                <img src={UserLogo} alt="user" width={25} height={25} />
-                                {getConversationDisplayName(conv.conversationName)}
-                            </span>
-                        </div>
+                        <div style={{ fontWeight: 600 }}>{getConversationDisplayName(conv.conversationName)}</div>
                         <div style={{ fontSize: 12, color: "#888" }}>
                             {conv.lastMessage ? conv.lastMessage : "Chưa có tin nhắn"}
                         </div>
@@ -145,7 +139,7 @@ const AdminChatTab = () => {
             {/* Main: Khung chat hoặc thông báo */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", height: "100%" }}>
                 {!selected ? (
-                    <div style={{ color: "gray", fontSize: 14, margin: "auto" }}>Nhấn vào hội thoại để bắt đầu</div>
+                    <div style={{ color: "#888", fontSize: 18, margin: "auto" }}>Nhấn vào hội thoại để bắt đầu</div>
                 ) : (
                     <>
                         <div style={{ padding: 16, borderBottom: "1px solid #eee", fontWeight: 600, fontSize: 16 }}>
@@ -157,39 +151,49 @@ const AdminChatTab = () => {
                             ) : messagesFromRedux.length === 0 ? (
                                 <div style={{ color: "#888" }}>Hãy trò chuyện để bắt đầu.</div>
                             ) : (
-                                messagesFromRedux.map((msg) => (
-                                    <div
-                                        key={msg.id}
-                                        style={{
-                                            marginBottom: 12,
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            alignItems: msg.sender?.userName === "admin" ? "flex-end" : "flex-start"
-                                        }}
-                                    >
+                                messagesFromRedux.map((msg) => {
+                                    // 🔥 FIX: Xác định nội dung hiển thị tại đây để tránh trường hợp content rỗng
+                                    const displayContent = msg.content || msg.message || "";
+
+                                    return (
                                         <div
+                                            key={msg.id}
                                             style={{
-                                                background: msg.sender?.userName === "admin" ? "#6c47ff" : "#f1f0f0",
-                                                color: msg.sender?.userName === "admin" ? "#fff" : "#222",
-                                                borderRadius: 16,
-                                                padding: "8px 16px",
-                                                maxWidth: "60%",
-                                                wordBreak: "break-word"
+                                                marginBottom: 12,
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                alignItems: msg.sender?.userName === "admin" ? "flex-end" : "flex-start"
                                             }}
                                         >
-                                            {typeof msg.content === "string" && msg.content.startsWith("[Hình ảnh]") ? (
-                                                <span role="img" aria-label="image">
-                                                    🖼️
-                                                </span>
-                                            ) : null}
-                                            {msg.content}
+                                            <div
+                                                style={{
+                                                    background:
+                                                        msg.sender?.userName === "admin" ? "#6c47ff" : "#f1f0f0",
+                                                    color: msg.sender?.userName === "admin" ? "#fff" : "#222",
+                                                    borderRadius: 16,
+                                                    padding: "8px 16px",
+                                                    maxWidth: "60%",
+                                                    wordBreak: "break-word"
+                                                }}
+                                            >
+                                                {/* Kiểm tra displayContent thay vì msg.content */}
+                                                {typeof displayContent === "string" &&
+                                                displayContent.startsWith("[Hình ảnh]") ? (
+                                                    <span role="img" aria-label="image">
+                                                        🖼️
+                                                    </span>
+                                                ) : null}
+                                                {displayContent}
+                                            </div>
+                                            <div style={{ fontSize: 10, color: "#aaa", marginTop: 2 }}>
+                                                {msg.sender?.userName} •{" "}
+                                                {msg.createdDate
+                                                    ? new Date(msg.createdDate).toLocaleString("vi-VN")
+                                                    : ""}
+                                            </div>
                                         </div>
-                                        <div style={{ fontSize: 10, color: "#aaa", marginTop: 2 }}>
-                                            {msg.sender?.userName} •{" "}
-                                            {msg.createdDate ? new Date(msg.createdDate).toLocaleString("vi-VN") : ""}
-                                        </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                             <div ref={messagesEndRef} />
                         </div>

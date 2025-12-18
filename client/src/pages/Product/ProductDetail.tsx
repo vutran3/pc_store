@@ -26,6 +26,7 @@ import { AppDispatch, RootState } from "@/redux/store";
 import ProductDetailSkeleton from "./components/ProductDetailSkeleton";
 import ImageModal from "@/components/ImageModal";
 import { useToast } from "@/hooks/use-toast";
+import RecommendedSection from "@/components/RecommendedSection";
 
 const SpecRow = ({ label, value, icon: Icon }: { label: string; value?: string; icon?: any }) => {
     if (!value) return null;
@@ -371,6 +372,8 @@ export default function ProductDetail() {
                         </div>
                     </div>
                 </div>
+
+                <RecommendedSection />
             </div>
         </div>
     );

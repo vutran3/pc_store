@@ -160,10 +160,12 @@ const Product = () => {
             setIsOpen(false);
             fetchProducts();
             resetForm();
-        } catch (error) {
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || "Có lỗi xảy ra";
+
             toast({
-                title: "Error",
-                description: "Failed to save product",
+                title: "Thất bại",
+                description: errorMessage,
                 variant: "destructive"
             });
         } finally {

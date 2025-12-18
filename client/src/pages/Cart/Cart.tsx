@@ -20,6 +20,7 @@ import { Link } from "react-router-dom";
 
 function Cart() {
     const { items } = useSelector((state: RootState) => state.cart);
+    console.log(items);
     const dispatch = useDispatch();
     const { toast } = useToast();
     const { info: user } = useSelector((state: RootState) => state.user);
@@ -228,9 +229,13 @@ function Cart() {
         } else if (paymentMethod === "paypal") {
             setIsOrdering(true);
             try {
-                const response = await get<any>(
-                    `${ENDPOINTS.PAYPAL}?amount=${totalPrice}&userId=${user?.id}&shipAddress=${address}`
-                );
+                const response = await post<any>(`${ENDPOINTS.PAYPAL}`, {
+                    amount: totalPrice,
+                    userId: user?.id,
+                    shipAddress: address,
+                    items: items
+                });
+
                 if (response.data.code === 1000) {
                     localStorage.setItem("paymentId", response.data.result.paymentId as string);
                     window.location.href = response.data.result.url;
@@ -242,6 +247,10 @@ function Cart() {
                 }
             } catch (error) {
                 console.log(error);
+                toast({
+                    title: "Lỗi kết nối",
+                    variant: "destructive"
+                });
             } finally {
                 setIsOrdering(false);
             }
@@ -249,7 +258,7 @@ function Cart() {
     };
 
     return (
-        <div className="container mx-auto px-4 pb-8 relative pt-24">
+        <div className="container mx-auto px-4 pb-10 relative pt-24">
             <div className="flex items-center gap-2 mb-6 text-muted-foreground">
                 <Link to="/" className="hover:text-orange-500 transition-colors">
                     Trang chủ

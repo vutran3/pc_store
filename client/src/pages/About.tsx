@@ -164,18 +164,18 @@ const stats = [
 
 const team = [
     {
-        name: "Nguyễn Văn A",
+        name: "Trần Đức Vũ",
         role: "Giám Đốc Kỹ Thuật",
         description: "15 năm kinh nghiệm trong lĩnh vực PC Gaming cao cấp, chuyên gia tư vấn giải pháp gaming đỉnh cao",
         img: ""
     },
     {
-        name: "Trần Thị B",
+        name: "Mai Chí Tâm",
         role: "Trưởng Phòng Thiết Kế",
         description: "Chuyên gia về thiết kế và tối ưu hóa hệ thống, 10 năm kinh nghiệm trong ngành công nghiệp gaming"
     },
     {
-        name: "Lê Văn C",
+        name: "Nam Trung - Văn Phong",
         role: "Trưởng Phòng CSKH",
         description:
             "10 năm kinh nghiệm trong lĩnh vực chăm sóc khách hàng, luôn đặt sự hài lòng của khách hàng lên hàng đầu"

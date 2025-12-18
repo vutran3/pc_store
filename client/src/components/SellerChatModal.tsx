@@ -1,50 +1,53 @@
-import { useState, useRef, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { useAppSelector, useAppDispatch } from '@/hooks'
-import { RootState } from '@/redux/store'
-import { MessageCircle, X, Send, User, Loader2 } from 'lucide-react'
-import { messageApi, Conversation as ApiConversation } from '@/services/api/messageApi'
-import { setMessages } from '@/redux/slices/chat'
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAppSelector, useAppDispatch } from "@/hooks";
+import { RootState } from "@/redux/store";
+import { MessageCircle, X, Send, User, Loader2 } from "lucide-react";
+import { messageApi, Conversation as ApiConversation } from "@/services/api/messageApi";
+import { setMessages } from "@/redux/slices/chat";
+import { Seller } from "../assets/logo";
 
 interface Message {
-    id: string | number
-    type: 'user' | 'seller'
-    message: string
-    timestamp: Date
+    id: string | number;
+    type: "user" | "seller";
+    message: string;
+    timestamp: Date;
 }
 
-const SellerChatModal = () => {
-    const [isOpen, setIsOpen] = useState(false)
-    const [conversation, setConversation] = useState<ApiConversation | null>(null)
-    const [inputValue, setInputValue] = useState('')
-    const [isLoading, setIsLoading] = useState(false)
-    const messagesEndRef = useRef<HTMLDivElement>(null)
-    const hasFetchedRef = useRef(false)
+interface SellerChatModalProps {
+    isOpen: boolean;
+    onOpen: () => void;
+    onClose: () => void;
+    isHidden: boolean;
+}
 
-    const dispatch = useAppDispatch()
-    const isLogin = useAppSelector((state: RootState) => state.auth.isLogin)
-    const currentUsername = useAppSelector((state: RootState) => state.user.info?.userName)
+const SellerChatModal = ({ isOpen, onOpen, onClose, isHidden }: SellerChatModalProps) => {
+    const [conversation, setConversation] = useState<ApiConversation | null>(null);
+    const [inputValue, setInputValue] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const hasFetchedRef = useRef(false);
 
-    // ✅ Lấy messages từ Redux
-    // Trong SellerChatModal.tsx
+    const dispatch = useAppDispatch();
+    const isLogin = useAppSelector((state: RootState) => state.auth.isLogin);
+    const currentUsername = useAppSelector((state: RootState) => state.user.info?.userName);
+
     const messagesFromRedux = useAppSelector((state: RootState) => {
         const msgs = conversation ? state.chat.messages[conversation.id] || [] : [];
-        console.log(`📬 SellerChatModal - Redux messages:`, msgs.length, msgs);
         return msgs;
     });
 
-    // ✅ Convert sang format hiển thị
-    const messages: Message[] = messagesFromRedux.map(msg => ({
+    const messages: Message[] = messagesFromRedux.map((msg) => ({
         id: msg.id,
-        type: msg.sender?.userName === currentUsername ? 'user' : 'seller',
+        type: msg.sender?.userName === currentUsername ? "user" : "seller",
         message: msg.message || msg.content,
         timestamp: new Date(msg.createdDate)
-    }))
+    }));
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
     const handleFetchConversation = async () => {
         if (hasFetchedRef.current) return;
@@ -57,7 +60,6 @@ const SellerChatModal = () => {
                 setConversation(conversations[0]);
                 const msgs = await messageApi.getMessages(conversations[0].id);
 
-                // ✅ Dispatch vào Redux thay vì setState
                 const formattedMsgs = msgs.map((msg: any) => ({
                     id: msg.id,
                     conversationId: conversations[0].id,
@@ -68,22 +70,24 @@ const SellerChatModal = () => {
                     me: msg.sender?.userName === currentUsername
                 }));
 
-                dispatch(setMessages({
-                    conversationId: conversations[0].id,
-                    messages: formattedMsgs
-                }));
+                dispatch(
+                    setMessages({
+                        conversationId: conversations[0].id,
+                        messages: formattedMsgs
+                    })
+                );
             } else {
                 setConversation(null);
             }
         } catch (error) {
-            console.error('Error fetching conversation:', error);
+            console.error("Error fetching conversation:", error);
             setConversation(null);
         }
-    }
+    };
 
     useEffect(() => {
-        scrollToBottom()
-    }, [messages])
+        scrollToBottom();
+    }, [messages, isOpen]);
 
     useEffect(() => {
         if (!isOpen) {
@@ -91,7 +95,7 @@ const SellerChatModal = () => {
             return;
         }
         handleFetchConversation();
-    }, [isOpen])
+    }, [isOpen]);
 
     const handleSendMessage = async () => {
         if (!inputValue.trim() || isLoading || !conversation) return;
@@ -99,45 +103,46 @@ const SellerChatModal = () => {
         setIsLoading(true);
         try {
             await messageApi.sendMessage(conversation.id, inputValue.trim());
-            setInputValue('');
-            // ✅ Socket sẽ tự động nhận và Redux sẽ update
+            setInputValue("");
         } catch (error) {
-            console.error('Error sending message:', error);
+            console.error("Error sending message:", error);
         } finally {
             setIsLoading(false);
         }
-    }
+    };
 
     const handleSuggestedQuestion = (question: string) => {
-        setInputValue(question)
-    }
+        setInputValue(question);
+    };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault()
-            handleSendMessage()
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
         }
-    }
+    };
 
-
-    if (!isLogin) return null
+    if (!isLogin) return null;
+    if (isHidden) return null;
 
     return (
         <>
             <button
-                onClick={() => setIsOpen(true)}
-                className={`fixed bottom-6 right-24 z-50 w-14 h-14 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center text-white hover:scale-110 ${isOpen ? 'hidden' : ''}`}
+                onClick={onOpen}
+                className={`fixed bottom-24 right-2 z-50 w-10 h-10 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center text-white hover:scale-110 ${
+                    isOpen ? "hidden" : ""
+                }`}
             >
                 <MessageCircle className="w-6 h-6" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse"></span>
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full animate-pulse"></span>
             </button>
 
             {isOpen && (
-                <div className="fixed bottom-6 right-24 z-50 w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
+                <div className="fixed bottom-8 right-2 z-50 w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
                     <div className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white p-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
-                                <User className="w-6 h-6 text-orange-600" />
+                            <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center overflow-hidden">
+                                <img src={Seller} alt="user" />
                             </div>
                             <div>
                                 <h3 className="font-semibold">Người bán</h3>
@@ -145,7 +150,7 @@ const SellerChatModal = () => {
                             </div>
                         </div>
                         <button
-                            onClick={() => setIsOpen(false)}
+                            onClick={onClose}
                             className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
                         >
                             <X className="w-4 h-4" />
@@ -159,24 +164,33 @@ const SellerChatModal = () => {
                         {messages.map((message) => (
                             <div
                                 key={message.id}
-                                className={`flex items-start gap-2 ${message.type === 'user' ? 'flex-row-reverse' : ''}`}
+                                className={`flex items-start gap-2 ${
+                                    message.type === "user" ? "flex-row-reverse" : ""
+                                }`}
                             >
-                                {message.type === 'user' ? (
+                                {message.type === "user" ? (
                                     <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-orange-500 text-white">
                                         <User className="w-4 h-4" />
                                     </div>
                                 ) : (
-                                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-400 text-white">
-                                        <User className="w-4 h-4 text-orange-700" />
+                                    <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center overflow-hidden">
+                                        <img src={Seller} alt="user" />
                                     </div>
                                 )}
-                                <div className={`max-w-[80%] p-3 rounded-2xl ${message.type === 'user'
-                                    ? 'bg-orange-500 text-white rounded-br-md'
-                                    : 'bg-white text-gray-800 rounded-bl-md shadow-sm border'
-                                    }`}>
+                                <div
+                                    className={`max-w-[80%] p-3 rounded-2xl ${
+                                        message.type === "user"
+                                            ? "bg-orange-500 text-white rounded-br-md"
+                                            : "bg-white text-gray-800 rounded-bl-md shadow-sm border"
+                                    }`}
+                                >
                                     <p className="text-sm whitespace-pre-wrap">{message.message}</p>
-                                    <span className={`text-xs mt-1 block ${message.type === 'user' ? 'text-orange-200' : 'text-gray-400'}`}>
-                                        {message.timestamp.toLocaleString('vi-VN')}
+                                    <span
+                                        className={`text-xs mt-1 block ${
+                                            message.type === "user" ? "text-orange-200" : "text-gray-400"
+                                        }`}
+                                    >
+                                        {message.timestamp.toLocaleString("vi-VN")}
                                     </span>
                                 </div>
                             </div>
@@ -201,7 +215,11 @@ const SellerChatModal = () => {
                         <div className="px-4 py-2 bg-white border-t">
                             <p className="text-xs text-gray-500 mb-2">Câu hỏi gợi ý:</p>
                             <div className="flex flex-wrap gap-1">
-                                {['Sản phẩm này còn hàng không?', 'Thời gian giao hàng dự kiến?', 'Có bảo hành không?'].map((question, index) => (
+                                {[
+                                    "Sản phẩm này còn hàng không?",
+                                    "Thời gian giao hàng dự kiến?",
+                                    "Có bảo hành không?"
+                                ].map((question, index) => (
                                     <button
                                         key={index}
                                         onClick={() => handleSuggestedQuestion(question)}
@@ -236,7 +254,7 @@ const SellerChatModal = () => {
                 </div>
             )}
         </>
-    )
-}
+    );
+};
 
-export default SellerChatModal
+export default SellerChatModal;

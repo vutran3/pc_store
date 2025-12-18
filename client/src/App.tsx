@@ -12,7 +12,7 @@ import About from "./pages/About";
 import Header from "./components/layout/Header";
 import Order from "./pages/Order";
 import OrderDetail from "./pages/Order/[id]";
-import { useEffect } from "react";
+import { useEffect, useState } from "react"; // Added useState
 import { del, get } from "./services/api.service";
 import { ENDPOINTS } from "./constants";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,6 +27,7 @@ import SellerChatModal from "./components/SellerChatModal";
 
 function App() {
     const dispatch = useDispatch();
+    const [activeChat, setActiveChat] = useState<"ai" | "seller" | null>(null);
 
     const { info: user } = useSelector((state: RootState) => state.user);
     const roles = useAppSelector((state: RootState) => state.user.info?.roles || []);
@@ -41,13 +42,17 @@ function App() {
 
     useEffect(() => {
         const paymentId = localStorage.getItem("paymentId");
-        let timerId = null;
+        let timerId: any = null;
 
         if (paymentId && user?.id) {
             timerId = setInterval(() => {
                 get(`${ENDPOINTS.PAYMENT_STATUS}/${paymentId}`).then((res) => {
                     const status = res.data;
                     if (status && status === "approved") {
+                        // --- THÊM DÒNG NÀY ---
+                        clearInterval(timerId);
+                        // ---------------------
+
                         localStorage.removeItem("paymentId");
                         clearCartApi(user?.id);
                         dispatch(clearCart());
@@ -86,8 +91,22 @@ function App() {
             </ProtectedRoutes>
             <Toaster />
 
-            {!isAdmin && <AIChatModal />}
-            {!isAdmin && <SellerChatModal />}
+            {!isAdmin && (
+                <div className="flex">
+                    <AIChatModal
+                        isOpen={activeChat === "ai"}
+                        onOpen={() => setActiveChat("ai")}
+                        onClose={() => setActiveChat(null)}
+                        isHidden={activeChat === "seller"}
+                    />
+                    <SellerChatModal
+                        isOpen={activeChat === "seller"}
+                        onOpen={() => setActiveChat("seller")}
+                        onClose={() => setActiveChat(null)}
+                        isHidden={activeChat === "ai"}
+                    />
+                </div>
+            )}
         </BrowserRouter>
     );
 }

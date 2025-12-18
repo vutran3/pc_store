@@ -15,6 +15,13 @@ interface Message {
     timestamp: Date;
 }
 
+interface AIChatModalProps {
+    isOpen: boolean;
+    onOpen: () => void;
+    onClose: () => void;
+    isHidden: boolean;
+}
+
 const suggestedQuestions = [
     "Có bao nhiêu sản phẩm trong hệ thống?",
     "Cho tôi biết thống kê tổng quan",
@@ -23,8 +30,7 @@ const suggestedQuestions = [
     "Tìm laptop gaming"
 ];
 
-const AIChatModal = () => {
-    const [isOpen, setIsOpen] = useState(false);
+const AIChatModal = ({ isOpen, onOpen, onClose, isHidden }: AIChatModalProps) => {
     const [messages, setMessages] = useState<Message[]>([
         {
             id: 0,
@@ -47,7 +53,7 @@ const AIChatModal = () => {
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, isOpen]);
 
     const handleSendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
@@ -64,10 +70,6 @@ const AIChatModal = () => {
         setIsLoading(true);
 
         try {
-            // Debug: kiểm tra token
-            const token = localStorage.getItem("token");
-            console.log("Token exists:", !!token);
-
             const response = await aiApi.askQuestion(userMessage.content);
 
             const botMessage: Message = {
@@ -80,11 +82,8 @@ const AIChatModal = () => {
             setMessages((prev) => [...prev, botMessage]);
         } catch (error: any) {
             console.error("AI Chat Error:", error);
-            console.error("Error response:", error.response?.data);
-
             let errorContent = "❌ Có lỗi xảy ra khi kết nối với AI. Vui lòng thử lại sau.";
 
-            // Xử lý lỗi authentication
             if (error.response?.data?.code === 1003 || error.response?.status === 401) {
                 errorContent = "🔐 Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
             } else if (error.response?.data?.message) {
@@ -121,25 +120,25 @@ const AIChatModal = () => {
         }
     };
 
-    // Không hiển thị nếu chưa đăng nhập
     if (!isLogin) return null;
+    if (isHidden) return null;
 
     return (
         <>
             {/* Floating Button */}
             <button
-                onClick={() => setIsOpen(true)}
-                className={`fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center text-white hover:scale-110 ${
+                onClick={onOpen}
+                className={`fixed bottom-8 right-2 z-50 w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center text-white hover:scale-110 ${
                     isOpen ? "hidden" : ""
                 }`}
             >
-                <MessageCircle className="w-6 h-6" />
+                <MessageCircle className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse"></span>
             </button>
 
             {/* Chat Modal */}
             {isOpen && (
-                <div className="fixed bottom-6 right-6 z-50 w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
+                <div className="fixed bottom-8 right-2 z-50 w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -154,7 +153,7 @@ const AIChatModal = () => {
                             </div>
                         </div>
                         <button
-                            onClick={() => setIsOpen(false)}
+                            onClick={onClose}
                             className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
                         >
                             <X className="w-4 h-4" />

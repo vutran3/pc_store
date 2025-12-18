@@ -124,42 +124,47 @@ const OrderPage = () => {
                                     {order.customer?.firstName} {order.customer?.lastName}
                                 </TableCell>
                                 <TableCell className="text-muted-foreground">
-                                    {new Date(String(order.orderDate).replace("ICT", "+0700")).toLocaleString("vi-VN", {
-                                        timeZone: "Asia/Ho_Chi_Minh",
-                                        year: "numeric",
-                                        month: "2-digit",
-                                        day: "2-digit",
-                                        hour: "2-digit",
-                                        minute: "2-digit"
-                                    })}
+                                    {order.orderDate
+                                        ? new Date(String(order.orderDate).replace("ICT", "+0700")).toLocaleString(
+                                              "vi-VN",
+                                              {
+                                                  timeZone: "Asia/Ho_Chi_Minh",
+                                                  year: "numeric",
+                                                  month: "2-digit",
+                                                  day: "2-digit",
+                                                  hour: "2-digit",
+                                                  minute: "2-digit"
+                                              }
+                                          )
+                                        : "Trống"}
                                 </TableCell>
                                 <TableCell className="font-medium">{order.totalPrice.toLocaleString()} VNĐ</TableCell>
                                 <TableCell>
                                     <Badge
-                                        variant={order.orderStatus === "completed" ? "default" : "secondary"}
+                                        variant={order.orderStatus === "DELIVERED" ? "default" : "secondary"}
                                         className={`
-                      ${
-                          order.orderStatus === "completed"
-                              ? "bg-green-100 text-green-800 hover:bg-green-200"
-                              : "bg-orange-100 text-orange-800 hover:bg-orange-200"
-                      }
-                      transition-colors duration-200
-                    `}
+                                            ${
+                                                order.orderStatus === "DELIVERED"
+                                                    ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                                    : "bg-orange-100 text-orange-800 hover:bg-orange-200"
+                                            }
+                                            transition-colors duration-200
+                                        `}
                                     >
-                                        {order.orderStatus}
+                                        {order.orderStatus ?? "Trống"}
                                     </Badge>
                                 </TableCell>
                                 <TableCell>
                                     <Badge
                                         variant={order.paid ? "default" : "destructive"}
                                         className={`
-                      ${
-                          order.paid
-                              ? "bg-green-100 text-green-800 hover:bg-green-200"
-                              : "bg-red-100 text-red-800 hover:bg-red-200"
-                      }
-                      transition-colors duration-200
-                    `}
+                                            ${
+                                                order.paid
+                                                    ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                                    : "bg-red-100 text-red-800 hover:bg-red-200"
+                                            }
+                                            transition-colors duration-200
+                                        `}
                                     >
                                         {order.paid ? "Paid" : "Unpaid"}
                                     </Badge>

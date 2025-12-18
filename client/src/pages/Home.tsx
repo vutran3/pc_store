@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { Cpu, HardDrive, Keyboard, Mouse } from "lucide-react";
+import ProductSlider from "@/components/ProductSlider";
 
 const Home = () => {
     const navigate = useNavigate();
     return (
-        <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+        <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-x-hidden">
             <section className="container py-12 ">
                 <div className="rounded-lg bg-card px-6 py-10 md:px-12 md:py-16 text-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
                     <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4">
@@ -20,6 +21,12 @@ const Home = () => {
                     </Button>
                 </div>
             </section>
+
+            {/* Slider 1: Best Selling */}
+            <ProductSlider title="Sản Phẩm Bán Chạy" type="best-selling" />
+
+            {/* Slider 2: New Arrivals */}
+            <ProductSlider title="Sản Phẩm Mới Về" type="newest" />
 
             <section className="container py-14">
                 <h2 className="text-2xl font-bold tracking-tight mb-8 text-center">Categories</h2>

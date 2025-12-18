@@ -94,11 +94,11 @@ export default function Header() {
                 className={`flex justify-center items-center text-white fixed w-[90%] sm:w-[95%] top-2 z-50 max-h-16 rounded-full backdrop-blur-md left-1/2 -translate-x-1/2 transition-all duration-500  bg-black/50`}
                 style={{
                     boxShadow: isScrolled
-                        ? ` 0 0 40px rgba(251,146,60,0.6),
+                        ? ` 0 0 10px rgba(251,146,60,0.6),
                             inset 0 0 40px rgba(251,146,60,0.3),
-                            0 0 80px rgba(251,146,60,0.2),
-                            0 0 120px rgba(251,146,60,0.15),
-                            0 0 160px rgba(251,146,60,0.1)
+                            0 0 20px rgba(251,146,60,0.2),
+                            0 0 30px rgba(251,146,60,0.15),
+                            0 0 40px rgba(251,146,60,0.1)
                           `
                         : "none",
                     border: isScrolled ? `1px solid rgba(251,146,60,0.4)` : "none",
