@@ -1,5 +1,6 @@
 package com.pc.store.server.controllers;
 
+import com.pc.store.server.mapper.ProductMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/products")
 @RequiredArgsConstructor
@@ -21,6 +24,23 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductController {
     ProductService productService;
     int size = 10;
+    private final ProductMapper productMapper;
+
+    @GetMapping("/newest")
+    public ApiResponse<List<ProductResponse>> getNewestProducts(@RequestParam(defaultValue = "10") int limit) {
+        var products = productService.getNewestProducts(limit);
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(products.stream().map(productMapper::toProductResponse).toList())
+                .build();
+    }
+
+    @GetMapping("/best-selling")
+    public ApiResponse<List<ProductResponse>> getBestSellingProducts(@RequestParam(defaultValue = "10") int limit) {
+        var products = productService.getBestSellingProducts(limit);
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(products.stream().map(productMapper::toProductResponse).toList())
+                .build();
+    }
 
     @GetMapping
     public ApiResponse<Page<Product>> getProducts(@RequestParam(defaultValue = "0") int page) {

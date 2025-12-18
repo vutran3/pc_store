@@ -30,6 +30,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Query;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -44,6 +50,38 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     ProductDetailService productDetailService;
 
+    @Autowired
+    private GeminiService geminiService;
+
+    final MongoTemplate mongoTemplate;
+
+    // Lấy sản phẩm mới nhất (Dựa trên ObjectId vì nó chứa timestamp)
+    public List<Product> getNewestProducts(int limit) {
+        Query query = new Query();
+        query.with(Sort.by(Sort.Direction.DESC, "_id"));
+        query.limit(limit);
+        return mongoTemplate.find(query, Product.class);
+    }
+
+    // Lấy sản phẩm bán chạy nhất (Phân tích từ collection 'orders')
+    public List<Product> getBestSellingProducts(int limit) {
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.unwind("items"),
+                Aggregation.group("items.product._id").sum("items.quantity").as("totalSold"),
+                Aggregation.sort(Sort.Direction.DESC, "totalSold"),
+                Aggregation.limit(limit),
+                Aggregation.lookup("products", "_id", "_id", "productInfo"),
+                Aggregation.unwind("productInfo"),
+                Aggregation.replaceRoot("productInfo")
+        );
+
+        AggregationResults<Product> results = mongoTemplate.aggregate(
+                aggregation, "orders", Product.class
+        );
+
+        return results.getMappedResults();
+    }
+
     @Override
     @SuppressWarnings("chua co logic check neu them 2 san pham giong nhau thi ntn")
     @Transactional
@@ -52,10 +90,16 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new RuntimeException("Error mapping ProductCreationRequest to Product"));
 
         product.setUpdateDetail(false);
-        Product savedProduct = productRepository.save(product);
-        if (savedProduct == null) {
-            throw new AppException(ErrorCode.PRODUCT_NOT_CREATED_SUCCESSFULLY);
+
+        if (request.getImg() != null && !request.getImg().isEmpty()) {
+            boolean isSafe = geminiService.isImageSafe(request.getImg());
+            if (!isSafe) {
+                throw new RuntimeException("Hình ảnh chứa nội dung nhạy cảm (thuốc lá, vũ khí) và bị từ chối.");
+            }
         }
+
+        Product savedProduct = productRepository.save(product);
+        if (savedProduct == null) throw new AppException(ErrorCode.PRODUCT_NOT_CREATED_SUCCESSFULLY);
         log.info("Product created successfully with id: {}", savedProduct.getId());
 
         if (request.getProductDetailCreationRequest() != null) {
@@ -103,14 +147,20 @@ public class ProductServiceImpl implements ProductService {
                 .findById(new ObjectId(productId))
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
+        if (request.getImg() != null && !request.getImg().isEmpty()) {
+            boolean isSafe = geminiService.isImageSafe(request.getImg());
+            log.info("ok 123123123123123");
+            log.info(String.valueOf(isSafe));
+            if (!isSafe) throw new AppException(ErrorCode.SENSITIVE_IMAGE_CONTENT);
+        }
+
         Product updatedProduct = productMapper.toProductV1(request);
         updatedProduct.setId(existingProduct.getId()); // Giữ nguyên ID cũ
         updatedProduct.setUpdateDetail(existingProduct.isUpdateDetail()); // Giữ nguyên flag
 
         Product savedProduct = productRepository.save(updatedProduct);
-        if (savedProduct == null) {
-            throw new AppException(ErrorCode.PRODUCT_NOT_UPDATED_SUCCESSFULLY);
-        }
+        if (savedProduct == null) throw new AppException(ErrorCode.PRODUCT_NOT_UPDATED_SUCCESSFULLY);
+
 
         log.info("Product updated successfully: {}", productId);
 

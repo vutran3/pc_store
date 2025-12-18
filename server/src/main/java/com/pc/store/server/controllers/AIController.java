@@ -9,7 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import com.pc.store.server.services.AIService;
+import com.pc.store.server.services.impl.AIService;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -16,8 +16,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -27,7 +25,7 @@ public class MySecurity {
             "/api/auth/introspect", "/api/auth/logout", "/api/auth/refresh",
     };
     private final String[] PUBLIC_ENDPOINTS_GET = {
-            "/images/payment-done.png",
+            "/images/*",
             "/api/payment/inspect/{paymentId}",
             "/api/payment/cancel/{paymentId}",
             "/api/products",
@@ -35,7 +33,9 @@ public class MySecurity {
             "/api/products/desc",
             "/api/products/{name}",
             "/api/product-detail/{id}",
-            "/api/product-detail"
+            "/api/product-detail",
+            "/api/newest",
+            "/api/best-selling"
     };
 
     @Autowired

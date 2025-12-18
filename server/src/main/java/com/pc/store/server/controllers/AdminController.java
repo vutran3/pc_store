@@ -6,6 +6,7 @@ import com.pc.store.server.dto.request.ApiResponse;
 
 import java.util.Base64;
 
+import com.pc.store.server.services.impl.GeminiService;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +39,7 @@ public class AdminController {
 
     AdminService adminService;
     Cloudinary cloudinary;
+    private final GeminiService geminiService;
 
     @GetMapping("/customers")
     public ApiResponse<Page<Customer>> getAllCustomers(@RequestParam(defaultValue = "0") int page) {
@@ -57,10 +59,17 @@ public class AdminController {
     public ApiResponse<ProductResponse> addProduct(@RequestBody CreationProductRequest request) {
         try {
             String base64Image = request.getImg();
+
+            if (!geminiService.isImageSafe(base64Image)) {
+                throw new AppException(ErrorCode.SENSITIVE_IMAGE_CONTENT);
+            }
+
             if (base64Image.startsWith("data:image")) {
                 base64Image = base64Image.substring(base64Image.indexOf(",") + 1);
             }
             byte[] imageBytes = Base64.getDecoder().decode(base64Image);
+
+            // Upload lên Cloudinary
             String imageUrl = cloudinary
                     .uploader()
                     .upload(
@@ -70,9 +79,12 @@ public class AdminController {
                                     "folder", "PC_Store"))
                     .get("url")
                     .toString();
+
             request.setImg(imageUrl);
             var result = adminService.addProduct(request);
             return ApiResponse.<ProductResponse>builder().result(result).build();
+        } catch (AppException e) {
+            throw e; // Ném lại lỗi của Gemini nếu có
         } catch (Exception e) {
             e.printStackTrace();
             throw new AppException(ErrorCode.UPLOAD_IMAGE_FAILED);
@@ -85,11 +97,17 @@ public class AdminController {
         try {
             String base64Image = request.getImg();
             String imageUrl;
+
             if (base64Image.startsWith("http://") || base64Image.startsWith("https://")) {
                 imageUrl = base64Image;
             } else if (base64Image.startsWith("data:image")) {
-                base64Image = base64Image.substring(base64Image.indexOf(",") + 1);
-                byte[] imageBytes = Base64.getDecoder().decode(base64Image);
+
+                if (!geminiService.isImageSafe(base64Image)) {
+                    throw new AppException(ErrorCode.SENSITIVE_IMAGE_CONTENT);
+                }
+
+                String rawBase64 = base64Image.substring(base64Image.indexOf(",") + 1);
+                byte[] imageBytes = Base64.getDecoder().decode(rawBase64);
 
                 imageUrl = cloudinary
                         .uploader()
@@ -105,9 +123,10 @@ public class AdminController {
             }
 
             request.setImg(imageUrl);
-
             var result = adminService.updateProduct(request, id);
             return ApiResponse.<ProductResponse>builder().result(result).build();
+        } catch (AppException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             throw new AppException(ErrorCode.UPLOAD_IMAGE_FAILED);

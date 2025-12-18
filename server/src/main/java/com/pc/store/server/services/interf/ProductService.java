@@ -11,6 +11,10 @@ import com.pc.store.server.dto.response.ProductResponse;
 import com.pc.store.server.entities.Product;
 
 public interface ProductService {
+    List<Product> getNewestProducts(int limit);
+
+    List<Product> getBestSellingProducts(int limit);
+
     Optional<ProductResponse> addProduct(ProductCreationRequest request);
 
     List<ProductResponse> getProductByNameOrSupplier(String keyword);

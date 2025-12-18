@@ -40,6 +40,7 @@ public class AdminService {
     final ProductDetailRepository productDetailRepository;
     final OrderRepository orderRepository;
     final int SIZE = 10;
+    private final GeminiService geminiService;
 
     @PostAuthorize("hasAuthority('ROLE_ADMIN')")
     public Page<Customer> getCustomersByPage(int page) {

@@ -1,5 +1,7 @@
 package com.pc.store.server.controllers;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import com.paypal.api.payments.*;
@@ -8,6 +10,7 @@ import com.paypal.base.rest.PayPalRESTException;
 import com.pc.store.server.dao.CustomerRepository;
 import com.pc.store.server.dao.OrderRepository;
 import com.pc.store.server.dao.PaymentRepository;
+import com.pc.store.server.dto.request.PaymentRequest;
 import com.pc.store.server.dto.response.PaymentResponse;
 import com.pc.store.server.entities.Customer;
 import com.pc.store.server.entities.OrderStatus;
@@ -27,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+
 
 @Controller
 @RequestMapping("/api/payment")
@@ -51,13 +55,11 @@ public class PaymentController {
     private final PaymentRepository paymentRepository;
 
     @ResponseBody
-    @GetMapping("/create_payment")
+    @PostMapping("/create_payment")
     public ApiResponse<?> createPayment(HttpServletRequest request,
-                                        @RequestParam(value = "amount") String amt,
-                                        @RequestParam(value = "userId") String userId,
-                                        @RequestParam(value = "shipAddress") String address) throws PayPalRESTException {
-        double totalAmount = Double.parseDouble(amt) / 26000;
-
+                                        @RequestBody PaymentRequest paymentRequest
+    ) throws PayPalRESTException {
+        double totalAmount = Double.parseDouble(paymentRequest.getAmount()) / 26000;
         String currency = "USD";
         String description = "Thanh toan hoa don";
         String paymentMethod = "PAYPAL";
@@ -90,14 +92,21 @@ public class PaymentController {
 
         Payment createdPayment = payment.create(apiContext);
         com.pc.store.server.entities.Order order = new com.pc.store.server.entities.Order();
-        Customer customer = customerRepository.findById(new ObjectId(userId)).orElse(null);
+        Customer customer = customerRepository.findById(new ObjectId(paymentRequest.getUserId())).orElse(null);
 
         if(customer != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String orderDate = LocalDateTime.now().format(formatter);
+
             order.setCustomer(customer);
-            order.setShipAddress(address);
+            order.setShipAddress(paymentRequest.getShipAddress());
             order.setTotalPrice(totalAmount);
             order.setCurrency(currency);
             order.setPaid(false);
+            order.setOrderDate(orderDate);
+            order.setItems(paymentRequest.getItems());
+            order.setOrderStatus(OrderStatus.DELIVERING);
+
             orderRepository.save(order);
         }
 
@@ -117,7 +126,7 @@ public class PaymentController {
                 paymentEntity.setDescription(description);
                 paymentEntity.setAmount(totalAmount);
                 paymentEntity.setStatus(PaymentStatus.CREATED.toString());
-                paymentEntity.setUserId(userId);
+                paymentEntity.setUserId(paymentRequest.getUserId());
                 paymentRepository.save(paymentEntity);
                 return ApiResponse.builder().result(payload).build();
             }

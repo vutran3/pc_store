@@ -15,4 +15,6 @@ public interface OrderRepository extends MongoRepository<Order, ObjectId> {
     Order findOrderByCustomerId(ObjectId customerId);
     List<Order> findAllByCustomerId(ObjectId customerId);
     Page<Order> findAllBy(Pageable pageable);
+
+    List<Order> findByCustomerId(ObjectId userObjId);
 }

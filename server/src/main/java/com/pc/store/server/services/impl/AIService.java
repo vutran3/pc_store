@@ -1,4 +1,4 @@
-package com.pc.store.server.services;
+package com.pc.store.server.services.impl;
 
 import java.util.List;
 import java.util.Map;
