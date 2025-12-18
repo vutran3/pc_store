@@ -91,9 +91,8 @@ public class ChatMessageService {
                 .map(String::valueOf)
                 .toList();
 
-        Map<String, WebSocketSession> webSocketSessions =
-                webSocketSessionRepository.findAllByUserIdIn(userIds).stream()
-                        .collect(Collectors.toMap(WebSocketSession::getSocketSessionId, Function.identity()));
+        Map<String, WebSocketSession> webSocketSessions = webSocketSessionRepository.findAllByUserIdIn(userIds).stream()
+                .collect(Collectors.toMap(WebSocketSession::getSocketSessionId, Function.identity()));
 
         ChatMessageResponse chatMessageResponse = chatMessageMapper.toChatMessageResponse(chatMessage);
 
@@ -103,9 +102,7 @@ public class ChatMessageService {
             if (Objects.nonNull(webSocketSession)) {
                 try {
                     // ✅ So sánh ID với ID
-                    chatMessageResponse.setMe(
-                            webSocketSession.getUserId().equals(String.valueOf(userInfo.getId()))
-                    );
+                    chatMessageResponse.setMe(webSocketSession.getUserId().equals(String.valueOf(userInfo.getId())));
                     String message = objectMapper.writeValueAsString(chatMessageResponse);
                     client.sendEvent("send_message", message);
                 } catch (JsonProcessingException e) {

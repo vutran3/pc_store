@@ -1,8 +1,10 @@
 package com.pc.store.server.dto.request;
 
-import com.pc.store.server.entities.CartItem;
-import lombok.Data;
 import java.util.List;
+
+import com.pc.store.server.entities.CartItem;
+
+import lombok.Data;
 
 @Data
 public class PaymentRequest {

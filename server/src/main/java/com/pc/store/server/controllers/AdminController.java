@@ -1,12 +1,7 @@
 package com.pc.store.server.controllers;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
-import com.pc.store.server.dto.request.ApiResponse;
-
 import java.util.Base64;
 
-import com.pc.store.server.services.impl.GeminiService;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,13 +17,11 @@ import com.pc.store.server.entities.Order;
 import com.pc.store.server.exception.AppException;
 import com.pc.store.server.exception.ErrorCode;
 import com.pc.store.server.services.impl.AdminService;
+import com.pc.store.server.services.impl.GeminiService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Base64;
 
 @RestController
 @RequestMapping("/api/admin")

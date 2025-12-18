@@ -1,15 +1,16 @@
 package com.pc.store.server.services.impl;
 
+import java.util.List;
 
-import com.pc.store.server.dto.request.GeminiRequest;
-import com.pc.store.server.dto.response.GeminiResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
+import com.pc.store.server.dto.request.GeminiRequest;
+import com.pc.store.server.dto.response.GeminiResponse;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -37,11 +38,12 @@ public class GeminiService {
                 cleanBase64 = base64Image.split(",")[1];
             }
 
-            String url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey;
+            String url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key="
+                    + apiKey;
 
             // 2. Prompt rõ ràng hơn để tránh AI nói lan man
-            String prompt = "Analyze this image strictly. Does it contain weapons, guns, or tobacco? " +
-                    "Answer ONLY one word: 'SAFE' if none are present, 'UNSAFE' if any are present.";
+            String prompt = "Analyze this image strictly. Does it contain weapons, guns, or tobacco? "
+                    + "Answer ONLY one word: 'SAFE' if none are present, 'UNSAFE' if any are present.";
 
             // Lưu ý: Đảm bảo class GeminiRequest của bạn hỗ trợ cấu trúc này
             GeminiRequest request = GeminiRequest.builder()
@@ -53,8 +55,7 @@ public class GeminiService {
                                                     .mimeType(mimeType) // Sử dụng mimeType động
                                                     .data(cleanBase64)
                                                     .build())
-                                            .build()
-                            ))
+                                            .build()))
                             .build()))
                     .build();
 
@@ -62,7 +63,12 @@ public class GeminiService {
 
             if (response != null && !response.getCandidates().isEmpty()) {
                 // Lấy text trả về
-                String resultText = response.getCandidates().get(0).getContent().getParts().get(0).getText();
+                String resultText = response.getCandidates()
+                        .get(0)
+                        .getContent()
+                        .getParts()
+                        .get(0)
+                        .getText();
 
                 log.info("Gemini Raw Response: '{}'", resultText); // Log để debug xem AI thực sự nói gì
 

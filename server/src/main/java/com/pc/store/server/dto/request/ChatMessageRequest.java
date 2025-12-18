@@ -16,6 +16,7 @@ public class ChatMessageRequest {
 
     @NotBlank
     String message;
+
     @Builder.Default
     String content = "";
 }

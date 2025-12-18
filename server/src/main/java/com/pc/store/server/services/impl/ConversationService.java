@@ -51,7 +51,7 @@ public class ConversationService {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         var userInfoResponse = customerRespository.findByUserName(userId);
         var participantInfoResponse =
-                customerRespository.findByUserName(request.getParticipantIds().getFirst());
+                customerRespository.findByUserName(request.getParticipantIds().get(0));
 
         if (Objects.isNull(userInfoResponse) || Objects.isNull(participantInfoResponse)) {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);

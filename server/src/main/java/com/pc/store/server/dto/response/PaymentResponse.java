@@ -1,10 +1,10 @@
 package com.pc.store.server.dto.response;
 
+import java.io.Serializable;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
-
-import java.io.Serializable;
 
 @Data
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)

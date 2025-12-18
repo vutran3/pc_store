@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { RootState } from "@/redux/store";
 import { deleteCartItem, getCartCount } from "@/redux/thunks/cart";
 import { viewOrder } from "@/redux/thunks/order";
-import { get, post } from "@/services/api.service";
+import { post } from "@/services/api.service";
 import { Loader2, MapPin, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";

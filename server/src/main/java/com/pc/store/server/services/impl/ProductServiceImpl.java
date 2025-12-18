@@ -11,6 +11,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,12 +33,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.query.Query;
 
 @Service
 @RequiredArgsConstructor
@@ -72,12 +70,9 @@ public class ProductServiceImpl implements ProductService {
                 Aggregation.limit(limit),
                 Aggregation.lookup("products", "_id", "_id", "productInfo"),
                 Aggregation.unwind("productInfo"),
-                Aggregation.replaceRoot("productInfo")
-        );
+                Aggregation.replaceRoot("productInfo"));
 
-        AggregationResults<Product> results = mongoTemplate.aggregate(
-                aggregation, "orders", Product.class
-        );
+        AggregationResults<Product> results = mongoTemplate.aggregate(aggregation, "orders", Product.class);
 
         return results.getMappedResults();
     }
@@ -160,7 +155,6 @@ public class ProductServiceImpl implements ProductService {
 
         Product savedProduct = productRepository.save(updatedProduct);
         if (savedProduct == null) throw new AppException(ErrorCode.PRODUCT_NOT_UPDATED_SUCCESSFULLY);
-
 
         log.info("Product updated successfully: {}", productId);
 

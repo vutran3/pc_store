@@ -79,11 +79,11 @@ public class AuthenticationService {
         SignedJWT signedJWT = SignedJWT.parse(token);
         Date expiryDate = (isRefresh)
                 ? new Date(signedJWT
-                .getJWTClaimsSet()
-                .getIssueTime()
-                .toInstant()
-                .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
-                .toEpochMilli())
+                        .getJWTClaimsSet()
+                        .getIssueTime()
+                        .toInstant()
+                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                        .toEpochMilli())
                 : signedJWT.getJWTClaimsSet().getExpirationTime();
         boolean verified = signedJWT.verify(verifier);
         if (!(verified && expiryDate.after(new Date()))) throw new AppException(ErrorCode.UNAUTHENTICATED);

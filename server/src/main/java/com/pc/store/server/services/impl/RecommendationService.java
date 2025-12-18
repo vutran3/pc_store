@@ -1,10 +1,8 @@
 package com.pc.store.server.services.impl;
 
-import com.pc.store.server.dao.CartRepository;
-import com.pc.store.server.dao.OrderRepository;
-import com.pc.store.server.entities.*;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -13,8 +11,12 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import com.pc.store.server.dao.CartRepository;
+import com.pc.store.server.dao.OrderRepository;
+import com.pc.store.server.entities.*;
+
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +62,8 @@ public class RecommendationService {
     /**
      * Hàm phụ trợ: Trích xuất thông tin từ list CartItem
      */
-    private void extractInterests(List<CartItem> items, Set<String> suppliers, Set<String> keywords, Set<ObjectId> excludeIds) {
+    private void extractInterests(
+            List<CartItem> items, Set<String> suppliers, Set<String> keywords, Set<ObjectId> excludeIds) {
         for (CartItem item : items) {
             Product p = item.getProduct();
             if (p != null) {
@@ -95,7 +98,8 @@ public class RecommendationService {
     /**
      * Tạo Query MongoDB động
      */
-    private List<Product> findSimilarProducts(Set<String> suppliers, Set<String> keywords, Set<ObjectId> excludeIds, int limit) {
+    private List<Product> findSimilarProducts(
+            Set<String> suppliers, Set<String> keywords, Set<ObjectId> excludeIds, int limit) {
         Query query = new Query();
         List<Criteria> orCriteria = new ArrayList<>();
 
@@ -135,10 +139,12 @@ public class RecommendationService {
                 fallbackQuery.addCriteria(Criteria.where("_id").nin(excludeIds));
             }
             // Tránh trùng lặp với list recommendations hiện tại
-            Set<ObjectId> currentRecoIds = recommendations.stream().map(Product::getId).collect(Collectors.toSet());
+            Set<ObjectId> currentRecoIds =
+                    recommendations.stream().map(Product::getId).collect(Collectors.toSet());
             fallbackQuery.addCriteria(Criteria.where("_id").nin(currentRecoIds));
 
-            fallbackQuery.with(PageRequest.of(0, remaining, Sort.by(Sort.Direction.DESC, "priceAfterDiscount"))); // Lấy sản phẩm giá trị cao
+            fallbackQuery.with(PageRequest.of(
+                    0, remaining, Sort.by(Sort.Direction.DESC, "priceAfterDiscount"))); // Lấy sản phẩm giá trị cao
 
             recommendations.addAll(mongoTemplate.find(fallbackQuery, Product.class));
         }

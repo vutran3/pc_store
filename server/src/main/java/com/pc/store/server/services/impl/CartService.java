@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.pc.store.server.dao.CustomerRepository;
-import com.pc.store.server.entities.Product;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import com.pc.store.server.dao.CartRepository;
+import com.pc.store.server.dao.CustomerRepository;
 import com.pc.store.server.dao.ProductRepository;
 import com.pc.store.server.entities.Cart;
 import com.pc.store.server.entities.CartItem;

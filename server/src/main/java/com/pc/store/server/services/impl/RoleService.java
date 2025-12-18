@@ -1,17 +1,19 @@
 package com.pc.store.server.services.impl;
 
-import com.pc.store.server.dao.RoleRepository;
-import com.pc.store.server.dto.request.RoleRequest;
-import com.pc.store.server.dto.response.RoleResponse;
-import com.pc.store.server.entities.Role;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.pc.store.server.dao.RoleRepository;
+import com.pc.store.server.dto.request.RoleRequest;
+import com.pc.store.server.dto.response.RoleResponse;
+import com.pc.store.server.entities.Role;
+
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Service
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
